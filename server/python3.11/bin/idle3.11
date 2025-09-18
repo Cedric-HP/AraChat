@@ -1,5 +1,0 @@
-#!/home/passtech/GaiaPortable/Python-3.11.9/../python3.11/bin/python3.11
-
-from idlelib.pyshell import main
-if __name__ == '__main__':
-    main()
