@@ -4,26 +4,28 @@ import "../styles/loginregister.scss"
 import type { AppDispatch, RootState } from "../../lib/store";
 import fetchUserDataAction from "@/lib/action/fetchUserData";
 import { useDispatch, useSelector } from "react-redux";
+import { redirect, RedirectType } from 'next/navigation'
 import postRegisterAction from "@/lib/action/postRegister";
+import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
 
 type InputData = React.ChangeEvent<HTMLInputElement>
 const regularExpression  = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
 
-
 const LoginRegister: FC = () => {
 
-    const {} = useSelector(
-        (store: RootState) => store
+    const {status, error} = useSelector(
+        (store: RootState) => store.auth
     )
     const dispatch: AppDispatch = useDispatch()
     
 
-    const [pageState, setPageState] = useState<"home" | "login" | "register">("home")
+    const [pageState, setPageState] = useState<"login" | "register">("login")
     const [pageElement, setPageElement] = useState<JSX.Element>(<p></p>)
     const [initialPassword, setInitialPassword] = useState<string>("")
     const [confirmPassword, setConfirmPassword] = useState<string>("")
     const [isValid, setIsValid] = useState<boolean>(false)
     const [passwordFeedback, setPasswordFeedback] = useState<string>("")
+    const [statusElement, setStatusElement] = useState<JSX.Element>(<p></p>)
 
     const handleLogin =  useCallback(async (formdata: FormData) => {
         dispatch(fetchUserDataAction({
@@ -80,17 +82,30 @@ const LoginRegister: FC = () => {
         if(isValid)
             setIsValid(false)
     },[confirmPassword, initialPassword, isValid])
+
+    useEffect(()=>{
+        switch(status) {
+            case "idle":
+                setStatusElement(<p></p>)
+                break;
+            case "loading":
+                setStatusElement(<p>Chargement</p>)
+                break;
+            case "succeeded":
+                setStatusElement(<p>{pageState === "login" ? "Connection" : "Inscription"} réussie!</p>)
+                setTimeout(()=>{
+                    dispatch(displayLogRegAction())
+                    redirect('/chat', RedirectType.replace)
+                },1000)
+                break;
+            case "failed":
+                setStatusElement(<p>{error}</p>)
+                break;
+        }
+    },[dispatch, error, pageState, status])
     
     useEffect(()=>{
         switch(pageState){
-            case "home":
-                setPageElement(
-                    <>
-                        <button onClick={()=>setPageState("login")}>Login</button>
-                        <button onClick={()=>setPageState("register")}>Register</button>
-                    </>
-                )
-                break
             case"login":
                 setPageElement(
                     <>  
@@ -100,6 +115,7 @@ const LoginRegister: FC = () => {
                             <label htmlFor="password">Mot de foutre</label>
                             <input type="password" name="password" id="password" />
                             <input type="submit" value="Se Connecter"/>
+                            {statusElement}
                         </form>
                         <button onClick={()=>setPageState("register")}>Register</button>
                     </>
@@ -128,6 +144,7 @@ const LoginRegister: FC = () => {
                             <label htmlFor="password-confirm">Confirmer le Mot de foutre</label>
                             <input type="password" name="password-confirm" onChange={handleConfirmPassword} required/>
                             <p>{passwordFeedback}</p>
+                            {statusElement}
                             <input type="submit" value="S'Enregister" disabled={!isValid}/>
                         </form>
                         <button onClick={()=>setPageState("login")}>Login</button>
@@ -135,7 +152,7 @@ const LoginRegister: FC = () => {
                 )
                 break
         }
-    },[handleConfirmPassword, handleLogin, handlePassword, handleRegister, handleSubmitLogin, handleSubmitRegister, initialPassword.length, isValid, pageState, passwordFeedback])
+    },[handleConfirmPassword, handleLogin, handlePassword, handleRegister, handleSubmitLogin, handleSubmitRegister, initialPassword.length, isValid, pageState, passwordFeedback, statusElement])
 
     return (
         <>

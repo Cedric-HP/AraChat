@@ -2,12 +2,14 @@
 import { createReducer } from "@reduxjs/toolkit"
 import { Utilitise } from "../type/usersChatType"
 import changeCurrenteRoomAction from "../action/UtilitisesActions/changeCurrenteRoomAction"
+import displayLogRegAction from "../action/UtilitisesActions/displayLogRegAction"
 
 const initialState: Utilitise = {
     currentRoom: {
         id: -1,
         name: "Général"
-    }
+    },
+    logReg: false
 }
 
 const utilitisesReducer = createReducer<Utilitise>(
@@ -16,6 +18,8 @@ const utilitisesReducer = createReducer<Utilitise>(
         builder.addCase(changeCurrenteRoomAction, (state, action) => {
             state.currentRoom.id = action.payload.id
             state.currentRoom.name = action.payload.name
+        }).addCase(displayLogRegAction, (state) => {
+            state.logReg = !state.logReg
         })
     }
 )

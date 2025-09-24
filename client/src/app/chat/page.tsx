@@ -3,12 +3,13 @@
 import type { AppDispatch, RootState } from "../../lib/store";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { NextPage } from "next";
-import { useSearchParams } from 'next/navigation'
+import { redirect, RedirectType, useSearchParams } from 'next/navigation'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JSX, useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "../styles/chat.scss"
 import UserHeader from "../Components/UserHeader";
+import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
 
 type ProtoMessage = {
   name: string,
@@ -67,9 +68,25 @@ const currentUser = {
 
 export default function Home() {
 
-  const { currentRoom } = useSelector(
+  const { currentRoom, logReg } = useSelector(
     (store: RootState) => store.utilitisesReducer
   )
+  const { token } = useSelector(
+    (store: RootState) => store.auth
+  )
+
+  const dispatch: AppDispatch = useDispatch()
+
+  // Redirection
+
+  useEffect(()=>{
+    if(token === null) {
+      if(!logReg){
+        dispatch(displayLogRegAction())
+      }
+      redirect('/', RedirectType.replace)
+    }
+  },[dispatch, logReg, token])
 
   const roomId  = useSearchParams().get('roomId') || ""
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>)

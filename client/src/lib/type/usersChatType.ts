@@ -61,6 +61,7 @@ type Register = {
 
 type Utilitise = {
   currentRoom: Channel;
+  logReg: boolean;
 };
 
 export type {
