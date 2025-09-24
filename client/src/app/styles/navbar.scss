@@ -1,0 +1,55 @@
+nav {
+    h1 {
+        color: azure;
+        font-family: "Rubik Glitch", system-ui;
+        font-weight: 100;
+        text-shadow: 0 0 7px rgba(240, 255, 255, 0.541);
+        transition: all 0.2s;
+        animation: neon 1s infinite linear both;
+    }
+    background-color: rgb(145, 145, 145);
+    height: 75px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 150px;
+    ul {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        align-items: center;
+        a, select{
+            padding: 5px 10px; 
+            border-radius: 10px; 
+            font-family: "Nosifer", sans-serif;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: azure;
+        }
+        a:hover, select:hover {
+            background-color: rgb(206, 54, 54);
+        }
+        select{
+            border: none;
+            background-color: transparent;
+            option {
+                background: rgb(83, 21, 21);
+                padding: 10px;
+                transition: 0.4s;
+                font-family: "Nosifer", sans-serif;
+            }
+        }
+    }
+}
+
+@keyframes neon {
+    0%{
+        text-shadow: 0 0 7px rgba(240, 255, 255, 0.050);
+    }
+    50%{
+        text-shadow: 0 0 7px rgb(240, 255, 255);
+    }
+    100%{
+        text-shadow: 0 0 7px rgba(240, 255, 255, 0.050);
+    }
+}
