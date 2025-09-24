@@ -49,8 +49,6 @@ const Navbar: FC<IProps> = ({ children }) => {
     )
     const dispatch: AppDispatch = useDispatch()
 
-    // const fetch = useFetch()
-
     const handleSelect = useCallback((selectData: SelectData)=>{
         const selectedData = JSON.parse(selectData.target.value)
         dispatch(changeCurrenteRoomAction({id: selectedData.id , name: selectedData.name}))
@@ -60,17 +58,17 @@ const Navbar: FC<IProps> = ({ children }) => {
         setLogRegElement(logReg ?<LoginRegister/> : <></>)
     },[logReg])
 
-    useEffect(()=>{
-        if (user !== null) {
-            setChannelListElement(
-            user.channelList.map((item, index)=>{
-                return (
-                    <option value={JSON.stringify(item)} key={`${index}_${item.name}`}>{item.name}</option> 
-                )
-            })
-        )
-        }
-    },[user])
+    // useEffect(()=>{
+    //     if (user !== null) {
+    //         setChannelListElement(
+    //         user.channelList.map((item, index)=>{
+    //             return (
+    //                 <option value={JSON.stringify(item)} key={`${index}_${item.name}`}>{item.name}</option> 
+    //             )
+    //         })
+    //     )
+    //     }
+    // },[user])
     
     return (
         <>

@@ -33,27 +33,27 @@ const userList = [
 const prevMessageList: ProtoMessage[] = [
   {
     name: "Milf Gooner",
-    creatAt: "1",
+    creatAt: "2020/09/23 13:20",
     message: "Bonsoir"
   },
   {
     name: "HOT MILF",
-    creatAt: "2",
+    creatAt: "2020/09/23 13:22",
     message: "ARA ARA"
   },
   {
     name: "Petit Fils De Pute",
-    creatAt: "3",
+    creatAt: "2020/09/23 14:25",
     message: "Allez tous vous faire ENCULEZ!"
   },
   {
     name: "Gros Enculer",
-    creatAt: "4",
+    creatAt: "2020/09/23 15:04",
     message: "Deja fait XD"
   },
   {
     name: "U SUCK BIG GAYS WITH UR MOM",
-    creatAt: "5",
+    creatAt: "2020/09/23 16:54",
     message: "SUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUCK!!!!!"
   }
 ]
@@ -83,7 +83,7 @@ export default function Chat() {
         dispatch(fetchProfileAction())
       }
     }
-  },[dispatch, logReg, token])
+  },[dispatch, logReg, token, user])
 
   const roomId  = useSearchParams().get('roomId') || ""
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>)
@@ -133,6 +133,7 @@ export default function Chat() {
     setMessageElement(
       messageList.toReversed().map((item, index)=>{
         const itemSrc = item.name.replace(" ", "_")
+        const date = new Date(item.creatAt)
         return (
           <div className="message" key={`${item.creatAt}_${index}`}>
             <UserHeader
@@ -142,7 +143,7 @@ export default function Chat() {
               width={35}
             />
             <p>{item.message}</p>
-            <span>{item.creatAt}</span>
+            <span>{`${date.getFullYear()}/${date.getMonth()}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}</span>
           </div>
         )
       })
