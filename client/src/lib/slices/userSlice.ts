@@ -14,7 +14,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token:
+  token: 
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null, // On récup le token au démarrage ;)
   status: "idle",
   error: null,
