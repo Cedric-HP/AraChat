@@ -17,7 +17,6 @@ const LoginRegister: FC = () => {
         (store: RootState) => store.auth
     )
     const dispatch: AppDispatch = useDispatch()
-    
 
     const [pageState, setPageState] = useState<"login" | "register">("login")
     const [pageElement, setPageElement] = useState<JSX.Element>(<p></p>)
