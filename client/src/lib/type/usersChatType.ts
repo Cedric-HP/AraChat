@@ -14,12 +14,7 @@ type ApiToken = {
   res: string;
   access_token: string;
   token_type: "bearer";
-};
-
-type UserData = {
-  res: string;
-  tokenData: ApiToken;
-  channelList: Channel[];
+  channelList: Channel[]
 };
 
 type Message = {
@@ -45,13 +40,6 @@ type RegisterRedux = {
   fetchState: string;
 };
 
-type UserRedux = {
-  user: ProfilPublic | null;
-  token: string | null;
-  currentChannel: ChannelData | null;
-  fetchState: string;
-};
-
 type Register = {
   name: string;
   birthdate: string;
@@ -67,11 +55,9 @@ type Utilitise = {
 export type {
   ProfilPublic,
   ApiToken,
-  UserData,
   Message,
   ChannelData,
   FetchUserDataPaylaod,
-  UserRedux,
   Register,
   RegisterRedux,
   Channel,

@@ -1,8 +1,5 @@
 "use client";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AppDispatch, RootState } from "../../lib/store";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { NextPage } from "next";
 import { redirect, RedirectType, useSearchParams } from 'next/navigation'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JSX, useCallback, useEffect, useState } from "react";
@@ -17,9 +14,6 @@ type ProtoMessage = {
   message: string
 }
 
-const owner = {
-  name: "Milf Gooner"
-}
 const userList = [
   {
     name: "Gros Enculer"
@@ -62,16 +56,13 @@ const prevMessageList: ProtoMessage[] = [
     message: "SUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUCK!!!!!"
   }
 ]
-const currentUser = {
-  name: "Milf Gooner"
-}
 
-export default function Home() {
+export default function Chat() {
 
   const { currentRoom, logReg } = useSelector(
     (store: RootState) => store.utilitisesReducer
   )
-  const { token } = useSelector(
+  const { token, user } = useSelector(
     (store: RootState) => store.auth
   )
 
@@ -101,16 +92,18 @@ export default function Home() {
   },[roomId])
 
   useEffect(()=>{
-    const ownerSrc = owner.name.replace(" ", "_")
+    if(user !== null) {
+      const ownerSrc = user.name.replace(" ", "_")
     setOwnerElement(
        <UserHeader
-        name={owner.name}
+        name={user.name}
         src={`https://api.dicebear.com/7.x/rings/svg?seed=${ownerSrc}`}
         height={35}
         width={35}
        />
     )
-  },[])
+    }
+  },[user])
   useEffect(()=>{
     setMemberElement(
       userList.map((item, index)=>{
@@ -151,17 +144,19 @@ export default function Home() {
   },[messageList])
 
   const handleSendMessage = (formData: FormData)=>{
-    setMessageList((prevState)=>{
-      const newState = [...prevState]
-      newState.push(
-        {
-          name: currentUser.name ,
-          creatAt: String(new Date()),
-          message: String(formData.get("message"))
-        }
-      )
-      return newState
-    })
+    if (user !== null) {
+      setMessageList((prevState)=>{
+        const newState = [...prevState]
+        newState.push(
+          {
+            name: user.name ,
+            creatAt: String(new Date()),
+            message: String(formData.get("message"))
+          }
+        )
+        return newState
+      })
+    }
   }
 
   return (

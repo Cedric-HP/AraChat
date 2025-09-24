@@ -3,22 +3,44 @@ import { JSX, useCallback, useEffect, useState, type FC, type ReactNode } from "
 import "../styles/navbar.scss"
 import Link from "next/link";
 import LoginRegister from "./LoginRegister";
-import useFetch from "../Hook/useFetch";
 import type { AppDispatch, RootState } from "../../lib/store";
 import { useDispatch, useSelector } from "react-redux";
 import changeCurrenteRoomAction from "@/lib/action/UtilitisesActions/changeCurrenteRoomAction";
 import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import { Channel } from "@/lib/type/usersChatType";
 
 type IProps = {
   children: ReactNode[] | ReactNode;
 };
 type SelectData = React.ChangeEvent<HTMLSelectElement>
 
+type BaseChannel = {
+    general: Channel,
+    ia: Channel,
+    milf: Channel
+}
+
+const baseChannel: BaseChannel = {
+    general: {
+        id: 1,
+        name: "Général"
+    },
+    ia: {
+        id: 2,
+        name: "IA"
+    },
+    milf: {
+        id: 3,
+        name: "MILF"
+    }
+}
+
 const Navbar: FC<IProps> = ({ children }) => {
 
     const [logRegElement, setLogRegElement] = useState<JSX.Element>(<></>)
+    const [channelListElement, setChannelListElement] = useState<JSX.Element[]>([])
 
-    const { token } = useSelector(
+    const { token, user } = useSelector(
         (store: RootState) => store.auth
     )
 
@@ -30,25 +52,25 @@ const Navbar: FC<IProps> = ({ children }) => {
     // const fetch = useFetch()
 
     const handleSelect = useCallback((selectData: SelectData)=>{
-        switch(parseInt(selectData.target.value)) {
-            case -1:
-                dispatch(changeCurrenteRoomAction({id: -1, name: "Général"}))
-                break;
-            case -2:
-                dispatch(changeCurrenteRoomAction({id: -2, name: "IA"}))
-                break;
-            case -3:
-                dispatch(changeCurrenteRoomAction({id: -3, name: "MILF"}))
-                break;
-            // default:
-            //     const resData = fetch.getChannel(parseInt(selectData.target.value))
-
-        }
+        const selectedData = JSON.parse(selectData.target.value)
+        dispatch(changeCurrenteRoomAction({id: selectedData.id , name: selectedData.name}))
     },[dispatch])
 
     useEffect(()=>{
         setLogRegElement(logReg ?<LoginRegister/> : <></>)
     },[logReg])
+
+    useEffect(()=>{
+        if (user !== null) {
+            setChannelListElement(
+            user.channelList.map((item, index)=>{
+                return (
+                    <option value={JSON.stringify(item)} key={`${index}_${item.name}`}>{item.name}</option> 
+                )
+            })
+        )
+        }
+    },[user])
     
     return (
         <>
@@ -61,13 +83,12 @@ const Navbar: FC<IProps> = ({ children }) => {
                         <Link className="link" href={"/"}>Accueil</Link>
                         <Link className="link" href={"/chat"}>Chat</Link>
                         {
-                            token !== null ? 
+                            token === null ? 
                             <select name="channels" id="channels" onChange={handleSelect}>
-                                <option value={-1}>General</option>
-                                <hr />
-                                <option value={-2}>IA</option>
-                                <hr />
-                                <option value={-3}>MILF</option>
+                                <option value={JSON.stringify(baseChannel.general)}>General</option>
+                                <option value={JSON.stringify(baseChannel.ia)}>IA</option>
+                                <option value={JSON.stringify(baseChannel.milf)}>MILF</option>
+                                {channelListElement}
                             </select>:
                             <></>
                         }

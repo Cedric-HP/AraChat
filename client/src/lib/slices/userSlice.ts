@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ProfilPublic, ApiToken } from "../type/usersChatType";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ProfilPublic, ApiToken, Channel } from "../type/usersChatType";
 import postRegisterAction from "../action/postRegister";
 import fetchUserDataAction from "../action/fetchUserData";
 import fetchProfile from '../action/fetchProfile';
@@ -38,9 +39,9 @@ const authSlice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(postRegisterAction.fulfilled, (state, aciton) => {
+      .addCase(postRegisterAction.fulfilled, (state, action) => {
         state.status = "succeeded";
-        console.log("Inscription réussie pour :", aciton.payload.name);
+        console.log("Inscription réussie pour :", action.payload.name);
       })
       .addCase(postRegisterAction.rejected, (state, action) => {
         state.status = "failed";
