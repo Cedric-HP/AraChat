@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "../styles/chat.scss"
 import UserHeader from "../Components/UserHeader";
 import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import fetchProfileAction from "@/lib/action/fetchProfile";
 
 type ProtoMessage = {
   name: string,
@@ -76,6 +77,11 @@ export default function Chat() {
         dispatch(displayLogRegAction())
       }
       redirect('/', RedirectType.replace)
+    }
+    else{
+      if (user === null) {
+        dispatch(fetchProfileAction())
+      }
     }
   },[dispatch, logReg, token])
 

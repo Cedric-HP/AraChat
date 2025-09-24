@@ -95,7 +95,9 @@ const LoginRegister: FC = () => {
                 setStatusElement(<p>{pageState === "login" ? "Connection" : "Inscription"} réussie!</p>)
                 setTimeout(()=>{
                     dispatch(displayLogRegAction())
-                    redirect('/chat', RedirectType.replace)
+                    if (pageState === "login") {
+                        redirect('/chat', RedirectType.replace)
+                    }
                 },1000)
                 break;
             case "failed":

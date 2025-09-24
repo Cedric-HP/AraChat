@@ -3,6 +3,7 @@ type ProfilPublic = {
   name: string;
   birthdate: string;
   sexe: string;
+  channelList: Channel[];
 };
 
 type FetchUserDataPaylaod = {
@@ -14,7 +15,6 @@ type ApiToken = {
   res: string;
   access_token: string;
   token_type: "bearer";
-  channelList: Channel[]
 };
 
 type Message = {

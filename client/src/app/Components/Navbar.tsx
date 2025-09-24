@@ -83,7 +83,7 @@ const Navbar: FC<IProps> = ({ children }) => {
                         <Link className="link" href={"/"}>Accueil</Link>
                         <Link className="link" href={"/chat"}>Chat</Link>
                         {
-                            token === null ? 
+                            token !== null ? 
                             <select name="channels" id="channels" onChange={handleSelect}>
                                 <option value={JSON.stringify(baseChannel.general)}>General</option>
                                 <option value={JSON.stringify(baseChannel.ia)}>IA</option>
