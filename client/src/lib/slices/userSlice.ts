@@ -1,15 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ProfilPublic, ApiToken, Channel } from "../type/usersChatType";
+import { ProfilPublic, ApiToken, ChannelPublic, ChannelPublicList } from "../type/usersChatType";
 import postRegisterAction from "../action/postRegister";
 import fetchUserDataAction from "../action/fetchUserData";
 import fetchProfile from '../action/fetchProfile';
+import fetchChannelsListAction from "../action/fetchChannelsList";
+import setStatusToIdleAction from "../action/setStatusToIdle";
 
 interface AuthState {
   user: ProfilPublic | null;
   token: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
+  channelList: ChannelPublic[]
 }
 
 const initialState: AuthState = {
@@ -18,6 +21,7 @@ const initialState: AuthState = {
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null, // On récup le token au démarrage ;)
   status: "idle",
   error: null,
+  channelList: []
 };
 
 const authSlice = createSlice({
@@ -35,6 +39,9 @@ const authSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+      .addCase(setStatusToIdleAction, (state)=>{
+        state.status = "idle"
+      })
       .addCase(postRegisterAction.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -82,6 +89,22 @@ const authSlice = createSlice({
         state.error =
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";
+      })
+      .addCase(fetchChannelsListAction.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(
+        fetchChannelsListAction.fulfilled,
+        (state, action: PayloadAction<ChannelPublicList>) => {
+          state.status = "succeeded";
+          state.channelList = action.payload;
+        }
+      )
+      .addCase(fetchChannelsListAction.rejected, (state, action) => {
+        state.status = "failed";
+        state.error =
+          action.error.message ||
+          "Impossible de charger les channels";
       });
   },
 });

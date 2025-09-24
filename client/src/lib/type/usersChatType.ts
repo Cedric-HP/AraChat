@@ -3,7 +3,6 @@ type ProfilPublic = {
   name: string;
   birthdate: string;
   sexe: string;
-  channelList: Channel[];
 };
 
 type FetchUserDataPaylaod = {
@@ -23,17 +22,16 @@ type Message = {
   message: string;
 };
 
-type Channel = {
+type ChannelPublic = {
   id: number;
   name: string;
+  desc?: string;
+  owner: number | null;
 };
 
-type ChannelData = {
-  desc?: string;
-  owner: number;
-  authoriseUserList: number[];
-  messageLog: Message[];
-};
+type ChannelPublicList = [
+  ChannelPublic
+]
 
 type RegisterRedux = {
   res: string;
@@ -48,18 +46,19 @@ type Register = {
 };
 
 type Utilitise = {
-  currentRoom: Channel;
+  currentRoom: ChannelPublic;
   logReg: boolean;
+  firstFetchChannel: boolean
 };
 
 export type {
   ProfilPublic,
   ApiToken,
   Message,
-  ChannelData,
+  ChannelPublic,
   FetchUserDataPaylaod,
   Register,
   RegisterRedux,
-  Channel,
   Utilitise,
+  ChannelPublicList
 };
