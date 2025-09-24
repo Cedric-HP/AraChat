@@ -4,7 +4,7 @@ from datetime import datetime  # type: ignore
 
 # --- Modèles des données ---
 
-# NEW: Table de liaison entre Profil et Channel
+# Table de liaison entre Profil et Channel
 
 
 class ChannelUserLink(SQLModel, table=True):
@@ -58,11 +58,11 @@ class Message(SQLModel, table=True):
     message: str
     created_at: datetime = Field(default_factory=datetime.now)
 
-    # NEW: Relation > channel
+    # Relation > channel
     channel_id: Optional[int] = Field(default=None, foreign_key="channel.id")
     channel: Optional["Channel"] = Relationship(back_populates="messagelogs")
 
-    # NEW: Relation > profil
+    # Relation > profil
     author_id: Optional[int] = Field(default=None, foreign_key="profil.id")
     author: Optional[Profil] = Relationship(back_populates="messages")
 
@@ -80,7 +80,7 @@ class Channel(SQLModel, table=True):
         back_populates="channels", link_model=ChannelUserLink
     )
 
-# NEW: Modèles Channel/Message
+# Modèles Channel/Message
 
 class ChannelCreate(SQLModel):
     name: str
@@ -90,13 +90,23 @@ class ChannelPublic(SQLModel):
     id: int
     name: str
     desc: Optional[str] = None
-    owner_id: int
+    owner_id: Optional[int]
 
 class MessagePublic(ChannelPublic):
     id: int
     message: str
     created_at: datetime
-    owner_id: int
+    author_id: int
 
 class ChannelPublicWithMessages(ChannelPublic):
     messagelogs: List[MessagePublic] = []
+
+# NEW: Rajout d'un model pour afficher les details d'un channel + les membres
+
+class ChannelPublicWitchDetails(ChannelPublicWithMessages):
+    members: List[ProfilPublic] = []
+
+# NEW: Modèle simple pour avoir l'ID d'un profil à ajouter à un channel
+class MemberAdd(SQLModel):
+    profil_id: int
+

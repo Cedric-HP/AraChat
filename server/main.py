@@ -16,6 +16,8 @@ from models import (
     ChannelCreate,
     ChannelPublic,
     ChannelPublicWithMessages,
+    ChannelPublicWitchDetails,
+    MemberAdd
 )
 from database import get_session, create_db_and_tables
 
@@ -98,7 +100,7 @@ async def read_profil_me(current_profil: Profil = Depends(auth.get_current_profi
     return current_profil
 
 
-# NEW: Endpoint pour crée un nouveau channel
+# Endpoint pour crée un nouveau channel
 @app.post("/channel/", response_model=ChannelPublic)
 async def create_new_channel(
     channel_data: ChannelCreate,
@@ -110,7 +112,7 @@ async def create_new_channel(
     )
 
 
-# NEW: Endpoint pour get la liste des channels
+# Endpoint pour get la liste des channels
 @app.get("/channels/", response_model=list[ChannelPublic])
 async def get_channels_list(
     session: Session = Depends(get_session),
@@ -119,7 +121,8 @@ async def get_channels_list(
     channels = crud.get_all_channel(session=session)
     return channels
 
-# NEW: Endpoint pour get les details d'un channel
+
+# Endpoint pour get les details d'un channel
 @app.get("/channels/{channel_id}", response_model=ChannelPublicWithMessages)
 async def get_channel_details(
     channel_id: int,
@@ -129,4 +132,36 @@ async def get_channel_details(
     db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
     if db_channel is None:
         raise HTTPException(status_code=404, detail="Channel non trouvé")
+
+    is_public = db_channel.owner_id is None
+    is_member = current_profil in db_channel.members
+
+    if not (is_public or is_member):
+        raise HTTPException(status_code=403, detail="Accès à ce channel non autorisé")
+
     return db_channel
+
+# NEW: Endpoint pour ajouter un membre à un channel
+@app.post("/channels/{channel_id}/members", response_model=ChannelPublicWitchDetails)
+async def add_member_to_a_channel(
+    channel_id: int,
+    member_to_add: MemberAdd,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    if db_channel is None:
+        raise HTTPException(status_code=404, detail="Channel non Trouvé")
+
+    if db_channel.owner_id != current_profil.id:
+        raise HTTPException(status_code=403, detail="Seul le propriétaire peux ajouter des membres")
+
+    profil_to_add = crud.get_profil_by_id(session=session, profil_id=member_to_add.profil_id)
+    if not profil_to_add:
+        raise HTTPException(status_code=404, detail="Utilisateur à ajouter non trouvé.")
+    
+    if profil_to_add in db_channel.members:
+        raise HTTPException(status_code=400, detail="Cet utilisateur est déjà membres du channel")
+
+    updated_channel = crud.add_member_to_channel(session=session, channel=db_channel, profil=profil_to_add)
+    return updated_channel
