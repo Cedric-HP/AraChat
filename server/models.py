@@ -86,13 +86,17 @@ class ChannelCreate(SQLModel):
     name: str
     desc: Optional[str] = None
 
+# NEW: Modèles pour la creation d'un msg
+class MessageCreate(SQLModel):
+    message: str
+
 class ChannelPublic(SQLModel):
     id: int
     name: str
     desc: Optional[str] = None
     owner_id: Optional[int]
 
-class MessagePublic(ChannelPublic):
+class MessagePublic(SQLModel):
     id: int
     message: str
     created_at: datetime
@@ -101,12 +105,12 @@ class MessagePublic(ChannelPublic):
 class ChannelPublicWithMessages(ChannelPublic):
     messagelogs: List[MessagePublic] = []
 
-# NEW: Rajout d'un model pour afficher les details d'un channel + les membres
+# Rajout d'un model pour afficher les details d'un channel + les membres
 
 class ChannelPublicWitchDetails(ChannelPublicWithMessages):
     members: List[ProfilPublic] = []
 
-# NEW: Modèle simple pour avoir l'ID d'un profil à ajouter à un channel
+# Modèle simple pour avoir l'ID d'un profil à ajouter à un channel
 class MemberAdd(SQLModel):
     profil_id: int
 

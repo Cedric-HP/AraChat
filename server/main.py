@@ -17,7 +17,9 @@ from models import (
     ChannelPublic,
     ChannelPublicWithMessages,
     ChannelPublicWitchDetails,
-    MemberAdd
+    MemberAdd,
+    MessageCreate,
+    MessagePublic,
 )
 from database import get_session, create_db_and_tables
 
@@ -135,13 +137,15 @@ async def get_channel_details(
 
     is_public = db_channel.owner_id is None
     is_member = current_profil in db_channel.members
+    is_owner = db_channel.owner_id == current_profil.id
 
-    if not (is_public or is_member):
+    if not (is_public or is_member or is_owner):
         raise HTTPException(status_code=403, detail="Accès à ce channel non autorisé")
 
     return db_channel
 
-# NEW: Endpoint pour ajouter un membre à un channel
+
+# Endpoint pour ajouter un membre à un channel
 @app.post("/channels/{channel_id}/members", response_model=ChannelPublicWitchDetails)
 async def add_member_to_a_channel(
     channel_id: int,
@@ -154,14 +158,53 @@ async def add_member_to_a_channel(
         raise HTTPException(status_code=404, detail="Channel non Trouvé")
 
     if db_channel.owner_id != current_profil.id:
-        raise HTTPException(status_code=403, detail="Seul le propriétaire peux ajouter des membres")
+        raise HTTPException(
+            status_code=403, detail="Seul le propriétaire peux ajouter des membres"
+        )
 
-    profil_to_add = crud.get_profil_by_id(session=session, profil_id=member_to_add.profil_id)
+    profil_to_add = crud.get_profil_by_id(
+        session=session, profil_id=member_to_add.profil_id
+    )
     if not profil_to_add:
         raise HTTPException(status_code=404, detail="Utilisateur à ajouter non trouvé.")
-    
-    if profil_to_add in db_channel.members:
-        raise HTTPException(status_code=400, detail="Cet utilisateur est déjà membres du channel")
 
-    updated_channel = crud.add_member_to_channel(session=session, channel=db_channel, profil=profil_to_add)
+    if profil_to_add in db_channel.members:
+        raise HTTPException(
+            status_code=400, detail="Cet utilisateur est déjà membres du channel"
+        )
+
+    updated_channel = crud.add_member_to_channel(
+        session=session, channel=db_channel, profil=profil_to_add
+    )
     return updated_channel
+
+
+# NEW: Endpoint pour poster un msg dans un channel
+@app.post("/channels/{channel_id}/messages", response_model=MessagePublic)
+async def create_new_message_in_channel(
+    channel_id: int,
+    message_data: MessageCreate,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    if db_channel is None:
+        raise HTTPException(status_code=404, detail="Channel non trouvé.")
+
+    is_public = db_channel.owner_id is None
+    is_member = current_profil in db_channel.members
+    is_owner = db_channel.owner_id == current_profil.id
+    if not (is_public or is_member or is_owner):
+        raise HTTPException(
+            status_code=403,
+            detail="Vous n'avez pas l'autorisation de poster dans ce channel",
+        )
+
+    new_message = crud.create_message_in_channel(
+        session=session,
+        message_data=message_data,
+        channel_id=channel_id,
+        author_id=current_profil.id,
+    )
+
+    return new_message

@@ -21,12 +21,12 @@ def get_all_channel(session: Session, skip: int = 0, limit: int = 100):
     statement = select(models.Channel).offset(skip).limit(limit)
     return session.exec(statement).all()
 
-# NEW: Funciton pour récupérer un profil par son ID
+# Funciton pour récupérer un profil par son ID
 
 def get_profil_by_id(session: Session, profil_id: int):
     return session.get(models.Profil, profil_id)
 
-# NEW: Function pour ajouter un membre à un channel
+# Function pour ajouter un membre à un channel
 
 def add_member_to_channel(session: Session, channel: models.Channel, profil: models.Profil):
     channel.members.append(profil)
@@ -35,4 +35,14 @@ def add_member_to_channel(session: Session, channel: models.Channel, profil: mod
     session.refresh(channel)
     return channel
 
-# TODO: Function pour crée les message directement dans le channel
+# NEW: Function pour crée les message directement dans le channel
+def create_message_in_channel(session: Session, message_data: models.MessageCreate, channel_id: int, author_id: int):
+    db_message = models.Message(
+        message=message_data.message,
+        channel_id=channel_id,
+        author_id=author_id
+    )
+    session.add(db_message)
+    session.commit()
+    session.refresh(db_message)
+    return db_message
