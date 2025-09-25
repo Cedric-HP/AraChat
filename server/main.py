@@ -1,13 +1,20 @@
 from datetime import timedelta  # type: ignore
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    status,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
-
+import json
 import security
 import auth
 import crud
-
+from connection_manager import manager
 from models import (
     ProfilCreate,
     ProfilPublic,
@@ -209,6 +216,67 @@ async def create_new_message_in_channel(
 
     return new_message
 
-# TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Nouvel endpoint channel list)
 
-# TODO: Ajout de websocket
+# TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Possible nouvel endpoint channel list OU pas)
+
+
+# NEW: Ajout d'un nouvel endpoint pour le websocket ("L'url à notez sera ws:// et non http://")
+# /!\ Non testé, aucune idée de si cela fonctionne correctement. /!\
+# PS: Aucune idée de comment cela fonctionne coté front :3
+@app.websocket("/ws/{channel_id}/{token}")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    channel_id: int,
+    token: str,
+    session: Session = Depends(get_session),
+):
+    # Première étape: Auth l'user via le token
+    try:
+        current_profil = auth.get_current_profil(token=token, session=session)
+    except HTTPException:
+        # Token invalide > Ont refuse alors la connexion
+        await websocket.close(code=1008)
+        return
+
+    # Deuxième étape: Ont vérifie que l'user à bien accès au channel
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    if not db_channel:
+        await websocket.close(code=1007)
+        return
+
+    is_public = db_channel.owner_id is None
+    is_member = current_profil in db_channel.members
+    is_owner = db_channel.owner_id == current_profil.id
+    if not (is_public or is_member or is_owner):
+        await websocket.close(code=1008)
+        return
+
+    # Troisième étape: Ont accèpte et ont gère la connexion si tout est bon
+    await manager.connect(websocket, channel_id)
+    try:
+        # Petite boucle infinie pour listen les msg du client
+        while True:
+            data = await websocket.receive_text()
+            msg_data = json.loads(data)
+            # Ici ont sauvegarde les msg en DATABASE
+            new_msg = crud.create_message_in_channel(
+                session=session,
+                message_data=MessageCreate(message=msg_data["message"]),
+                channel_id=channel_id,
+                author_id=current_profil.id,
+            )
+            # On formate un msg en JSON à renvoyer à tous les users connectés
+            response_message = {
+                "id": new_msg.id,
+                "message": new_msg.message,
+                "author_name": current_profil.name,
+                "author_id": current_profil.id,
+                "created_at": new_msg.created_at.isoformat(),
+            }
+            # On diffuse le msg
+            await manager.broadcast(json.dumps(response_message), channel_id)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, channel_id)
+    except Exception as err:
+        print(f"Erreur WebSocket: {err}")
+        manager.disconnect(websocket, channel_id)
