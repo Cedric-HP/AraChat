@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { Register, ProfilPublic } from "../type/usersChatType";
 
 const postRegisterAction = createAsyncThunk<ProfilPublic, Register>(
-  "USERS-CHAT-REDUCER/postRegister",
+  "auth/postRegister",
   async ({ name, birthdate, sexe, password }) => {
     console.log({
       name: name,

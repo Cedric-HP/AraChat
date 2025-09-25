@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { ApiToken, FetchUserDataPaylaod } from "../type/usersChatType";
 
 const fetchUserDataAction = createAsyncThunk<ApiToken, FetchUserDataPaylaod>(
-  "USERS-CHAT-REDUCER/fetchUserData",
+  "auth/fetchUserData",
   async ({ name, password }) => {
     console.log({
       name: name,

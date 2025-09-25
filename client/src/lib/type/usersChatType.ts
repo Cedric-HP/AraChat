@@ -18,20 +18,45 @@ type ApiToken = {
 
 type Message = {
   id: number;
-  creatAt: string;
+  author_id: number;
+  created_at: string;
   message: string;
 };
+
+type MessageAdd = {
+  message: string;
+  channel_id: number;
+}
 
 type ChannelPublic = {
   id: number;
   name: string;
   desc?: string;
-  owner: number | null;
+  owner_id: number | null;
 };
 
 type ChannelPublicList = [
   ChannelPublic
 ]
+
+type MemberAdd = {
+  id: number,
+  user_id: number
+}
+
+type ChannelCreate = {
+  name: string,
+  desc?: string
+}
+
+type ChannelData = {
+  id: number;
+  name: string;
+  desc?: string;
+  owner_id: number | null;
+  members: ProfilPublic[]
+  messagelogs: Message[];
+}
 
 type RegisterRedux = {
   res: string;
@@ -60,5 +85,9 @@ export type {
   Register,
   RegisterRedux,
   Utilitise,
-  ChannelPublicList
+  ChannelPublicList,
+  ChannelData,
+  ChannelCreate,
+  MemberAdd,
+  MessageAdd
 };
