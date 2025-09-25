@@ -5,11 +5,12 @@ import Link from "next/link";
 import LoginRegister from "./LoginRegister";
 import type { AppDispatch, RootState } from "../../lib/store";
 import { useDispatch, useSelector } from "react-redux";
-import changeCurrenteRoomAction from "@/lib/action/UtilitisesActions/changeCurrenteRoomAction";
 import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
 import fetchChannelsListAction from "@/lib/action/fetchChannelsList";
 import setStatusToIdleAction from "@/lib/action/setStatusToIdle";
 import firstFetchChannelAction from "@/lib/action/UtilitisesActions/firstFetchChannelAction";
+import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
+import UserHeader from "./UserHeader";
 
 type IProps = {
   children: ReactNode[] | ReactNode;
@@ -19,9 +20,10 @@ type SelectData = React.ChangeEvent<HTMLSelectElement>
 const Navbar: FC<IProps> = ({ children }) => {
 
     const [logRegElement, setLogRegElement] = useState<JSX.Element>(<></>)
+    const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
     const [channelListElement, setChannelListElement] = useState<JSX.Element[]>([])
 
-    const { token, channelList, status } = useSelector(
+    const { token, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
     )
 
@@ -32,7 +34,7 @@ const Navbar: FC<IProps> = ({ children }) => {
 
     useEffect(()=>{
         if (status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
-            dispatch(changeCurrenteRoomAction(channelList[0]));
+            dispatch(fetchChannelsDataAction(channelList[0].id));
             dispatch(firstFetchChannelAction());
         }
         if(status === "succeeded") {
@@ -43,8 +45,7 @@ const Navbar: FC<IProps> = ({ children }) => {
     },[channelList, dispatch, firstFetchChannel, status])
 
     const handleSelect = useCallback((selectData: SelectData)=>{
-        const selectedData = JSON.parse(selectData.target.value)
-        dispatch(changeCurrenteRoomAction(selectedData))
+        dispatch(fetchChannelsDataAction(parseInt(selectData.target.value)))
     },[dispatch])
 
     useEffect(()=>{
@@ -52,18 +53,37 @@ const Navbar: FC<IProps> = ({ children }) => {
     },[logReg])
 
     useEffect(()=>{
-        dispatch(fetchChannelsListAction())
+        if(token !== null) {
+            dispatch(fetchChannelsListAction())
+        }
     },[dispatch, token])
 
     useEffect(()=>{
         setChannelListElement(
             channelList.map((item, index)=>{
                 return (
-                    <option value={JSON.stringify(item)} key={`${index}_${item.name}`}>{item.name}</option> 
+                    <option value={item.id} key={`${index}_${item.name}`}>{item.name}</option> 
                 )
             })
         )
     },[channelList])
+
+    useEffect(()=>{
+        if (token !== null && user !== null){
+            const userSrc = user.name.replace(" ", "_")
+            setAvatarElement(
+                <button>
+                    <UserHeader
+                    name={user.name}
+                    src={`https://api.dicebear.com/7.x/rings/svg?seed=${userSrc}`}
+                    height={55}
+                    width={55}
+                    />
+                </button>
+
+            )
+        }
+    },[token, user])
     
     return (
         <>
@@ -83,6 +103,7 @@ const Navbar: FC<IProps> = ({ children }) => {
                             <></>
                         }
                     </ul>
+                    {avatarElement}
                     <button onClick={()=> dispatch(displayLogRegAction())}>Afficher</button>
                 </nav>
             </header>

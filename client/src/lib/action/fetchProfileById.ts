@@ -1,26 +1,21 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { Message, MessageAdd} from "../type/usersChatType";
+import { ProfilPublic } from "../type/usersChatType";
 
-const postMessageAction = createAsyncThunk<Message, MessageAdd>(
-  "auth/postMessage",
-  async ({channel_id, message}, { rejectWithValue }) => {
+const fetchProfileByIdAction = createAsyncThunk<ProfilPublic, number>(
+  "auth/fetchProfileById",
+  async (id, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
         return rejectWithValue("Aucun token d'authentification trouvé");
       }
-      const res = await fetch(`http://localhost:8000/channels/${channel_id}/messages`, {
-        method: "POST",
+
+      const res = await fetch(`http://localhost:8000/profil/${id}`, {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
         },
-        body: 
-            JSON.stringify({
-                "message": message
-            }),
       });
 
       if (!res.ok) {
@@ -31,7 +26,7 @@ const postMessageAction = createAsyncThunk<Message, MessageAdd>(
         );
       }
 
-      const data: Message = await res.json();
+      const data: ProfilPublic = await res.json();
       return data;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,4 +40,4 @@ const postMessageAction = createAsyncThunk<Message, MessageAdd>(
   }
 );
 
-export default postMessageAction;
+export default fetchProfileByIdAction;

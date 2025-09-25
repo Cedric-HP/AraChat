@@ -4,10 +4,6 @@ import { ApiToken, FetchUserDataPaylaod } from "../type/usersChatType";
 const fetchUserDataAction = createAsyncThunk<ApiToken, FetchUserDataPaylaod>(
   "auth/fetchUserData",
   async ({ name, password }) => {
-    console.log({
-      name: name,
-      password: password,
-    });
     try {
       const formBody = new URLSearchParams();
       formBody.append("username", name);

@@ -71,7 +71,6 @@ type Register = {
 };
 
 type Utilitise = {
-  currentRoom: ChannelPublic;
   logReg: boolean;
   firstFetchChannel: boolean
 };

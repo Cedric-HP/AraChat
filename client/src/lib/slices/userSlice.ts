@@ -9,6 +9,7 @@ import fetchChannelsDataAction from "../action/fetchChannelDataAction";
 import fetchCreateChannelAction from "../action/postCreateChannelAction";
 import postAddMemberToChannelAction from "../action/postAddMemberToChannelAction";
 import postMessageAction from "../action/postMessageAction";
+import fetchProfileByIdAction from "../action/fetchProfileById";
 
 interface AuthState {
   user: ProfilPublic | null;
@@ -17,6 +18,7 @@ interface AuthState {
   error: string | null;
   channelList: ChannelPublic[];
   currentChannelData: ChannelData;
+  usersProfilList: ProfilPublic[];
 }
 
 const initialState: AuthState = {
@@ -33,7 +35,8 @@ const initialState: AuthState = {
     desc: "",
     members: [],
     messagelogs: [],
-  }
+  },
+  usersProfilList: []
 };
 
 const authSlice = createSlice({
@@ -105,6 +108,24 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         localStorage.removeItem("authToken");
+        state.error =
+          action.error.message ||
+          "Impossible de charger le profile de l'utilisateur.";
+      })
+
+      // Get Profil By Id Case -------------------------------------------------
+      .addCase(fetchProfileByIdAction.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(
+        fetchProfileByIdAction.fulfilled,
+        (state, action: PayloadAction<ProfilPublic>) => {
+          state.status = "succeeded";
+          state.usersProfilList.push(action.payload)
+        }
+      )
+      .addCase(fetchProfileByIdAction.rejected, (state, action) => {
+        state.status = "failed";
         state.error =
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";

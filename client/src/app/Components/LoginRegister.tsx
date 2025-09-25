@@ -158,6 +158,7 @@ const LoginRegister: FC = () => {
     return (
         <>
             <div id="log-reg">
+                <button onClick={()=>dispatch(displayLogRegAction())}>X</button>
                 {pageElement}
             </div>
         </>

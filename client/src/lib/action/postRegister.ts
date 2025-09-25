@@ -4,12 +4,6 @@ import { Register, ProfilPublic } from "../type/usersChatType";
 const postRegisterAction = createAsyncThunk<ProfilPublic, Register>(
   "auth/postRegister",
   async ({ name, birthdate, sexe, password }) => {
-    console.log({
-      name: name,
-      birthdate: birthdate,
-      sexe: sexe,
-      password: password,
-    });
     try {
       const res = await fetch(`http://localhost:8000/register/`, {
         method: "POST",
