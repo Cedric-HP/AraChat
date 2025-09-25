@@ -113,4 +113,3 @@ class ChannelPublicWitchDetails(ChannelPublicWithMessages):
 # Modèle simple pour avoir l'ID d'un profil à ajouter à un channel
 class MemberAdd(SQLModel):
     profil_id: int
-

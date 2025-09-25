@@ -32,7 +32,7 @@ from database import get_session, create_db_and_tables
 # --- Init de l'app FastAPI ---
 
 
-app = FastAPI(title="Ara Chat", version="0.0.5", on_startup=[create_db_and_tables])
+app = FastAPI(title="Ara Chat", version="0.0.7", on_startup=[create_db_and_tables])
 
 origins = [
     "http://localhost:8000",
@@ -110,7 +110,7 @@ async def read_profil_me(current_profil: Profil = Depends(auth.get_current_profi
     return current_profil
 
 
-# NEW: Endpoint pour return les info d'un profil via son ID
+# Endpoint pour return les info d'un profil via son ID
 @app.get("/profil/{profil_id}", response_model=ProfilPublic)
 async def get_profil_by_id(
     profil_id: int,
@@ -122,6 +122,24 @@ async def get_profil_by_id(
         raise HTTPException(status_code=404, detail="Profil non trouvé")
 
     return db_profil
+
+
+# NEW: Endpoint pour supprimer un profil via son ID
+@app.delete("/profil/{profil_id}/delete", response_model=MessageCreate)
+async def del_profil_by_id(
+    profil_id: int,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    # Seul l'utilisateur lui même pourra supprimer son profil
+    if current_profil.id != profil_id:
+        raise HTTPException(status_code=403, detail="Accès non autorisé")
+    db_profil_to_del = crud.del_profil_by_id(session=session, profil_id=profil_id)
+    if db_profil_to_del is None:
+        raise HTTPException(status_code=404, detail="Profil non trouvé")
+    return {
+        "message": f"Le profil '{db_profil_to_del.name}' a été supprimer avec succès."
+    }
 
 
 # Endpoint pour crée un nouveau channel
@@ -147,7 +165,6 @@ async def get_channels_list(
 
 
 # Endpoint pour get les details d'un channel
-# NEW: Mise à jour du response_model de l'endpoint pour afficher la liste des membres
 @app.get("/channels/{channel_id}", response_model=ChannelPublicWitchDetails)
 async def get_channel_details(
     channel_id: int,
@@ -166,6 +183,25 @@ async def get_channel_details(
         raise HTTPException(status_code=403, detail="Accès à ce channel non autorisé")
 
     return db_channel
+
+
+# NEW: Endpoint pour supprimer un channel via son ID
+@app.delete("/channels/{channel_id}/delete", response_model=MessageCreate)
+async def del_channel_by_id(
+    channel_id: int,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    # Seul un owner peut supprimer son channel
+    if db_channel.owner_id != current_profil.id:
+        raise HTTPException(status_code=403, detail="Accès non autorisé")
+    db_channel_to_del = crud.del_channel_by_id(session=session, channel_id=channel_id)
+    if db_channel_to_del is None:
+        raise HTTPException(status_code=404, detail="Channel non trouvé")
+    return {
+        "message": f"Le profil '{db_channel_to_del.name}' a été supprimer avec succès."
+    }
 
 
 # Endpoint pour ajouter un membre à un channel
@@ -202,6 +238,42 @@ async def add_member_to_a_channel(
     return updated_channel
 
 
+# NEW: Endpoint pour supprimer un membre d'un channel
+@app.delete(
+    "/channels/{channel_id}/member/delete", response_model=ChannelPublicWitchDetails
+)
+async def del_member_in_channel(
+    channel_id: int,
+    member_to_del: MemberAdd,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    if not db_channel:
+        raise HTTPException(status_code=404, detail="Channel non trouvé.")
+    if db_channel.owner_id != current_profil.id:
+        raise HTTPException(status_code=403, detail="Accès non autorisé.")
+
+    profil_to_remove = crud.get_profil_by_id(
+        session=session, profil_id=member_to_del.profil_id
+    )
+    if not profil_to_remove:
+        raise HTTPException(status_code=404, detail="Membre à supprimer non trouver.")
+    if db_channel.owner_id == profil_to_remove.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Le propriétaire ne peux pas être retiré du channel.",
+        )
+    if profil_to_remove not in db_channel.members:
+        raise HTTPException(
+            status_code=400, detail="Cet utilisateur n'est pas membre du channel."
+        )
+    updated_channel = crud.del_member_in_channel(
+        session=session, channel=db_channel, profil=profil_to_remove
+    )
+    return updated_channel
+
+
 # Endpoint pour poster un msg dans un channel
 @app.post("/channels/{channel_id}/messages", response_model=MessagePublic)
 async def create_new_message_in_channel(
@@ -231,6 +303,9 @@ async def create_new_message_in_channel(
     )
 
     return new_message
+
+
+# TODO: Endpoint pour supprimer un message d'un channel
 
 
 # TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Possible nouvel endpoint channel list OU pas)
