@@ -86,7 +86,7 @@ class ChannelCreate(SQLModel):
     name: str
     desc: Optional[str] = None
 
-# NEW: Modèles pour la creation d'un msg
+# Modèles pour la creation d'un msg
 class MessageCreate(SQLModel):
     message: str
 

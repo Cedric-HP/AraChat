@@ -124,7 +124,7 @@ async def get_profil_by_id(
     return db_profil
 
 
-# NEW: Endpoint pour supprimer un profil via son ID
+# Endpoint pour supprimer un profil via son ID
 @app.delete("/profil/{profil_id}/delete", response_model=MessageCreate)
 async def del_profil_by_id(
     profil_id: int,
@@ -185,7 +185,7 @@ async def get_channel_details(
     return db_channel
 
 
-# NEW: Endpoint pour supprimer un channel via son ID
+# Endpoint pour supprimer un channel via son ID
 @app.delete("/channels/{channel_id}/delete", response_model=MessageCreate)
 async def del_channel_by_id(
     channel_id: int,
@@ -238,7 +238,7 @@ async def add_member_to_a_channel(
     return updated_channel
 
 
-# NEW: Endpoint pour supprimer un membre d'un channel
+# Endpoint pour supprimer un membre d'un channel
 @app.delete(
     "/channels/{channel_id}/member/delete", response_model=ChannelPublicWitchDetails
 )
@@ -305,7 +305,46 @@ async def create_new_message_in_channel(
     return new_message
 
 
-# TODO: Endpoint pour supprimer un message d'un channel
+# NEW: Endpoint pour supprimer un message d'un channel
+@app.delete(
+    "/channels/{channel_id}/message/{message_id}/delete",
+    response_model=MessageCreate,
+)
+async def del_message_in_channel(
+    channel_id: int,
+    message_id: int,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
+    if not db_channel:
+        raise HTTPException(status_code=404, detail="Channel non trouvé.")
+    db_message = crud.get_message_by_id(session=session, message_id=message_id)
+    if not db_message:
+        raise HTTPException(status_code=404, detail="Message non trouvé.")
+    if db_message.channel_id != channel_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Accès non autorisé: le message n'appartient pas à ce channel.",
+        )
+
+    is_author = db_message.author_id == current_profil.id
+    is_channel_owner = db_channel.owner_id == current_profil.id
+    is_admin = current_profil.id == 1
+
+    if not (is_author or is_channel_owner or is_admin):
+        raise HTTPException(
+            status_code=403,
+            detail="Accès non autorisé: vous n'êtes ni auteur du message ni propriétaire du channel",
+        )
+
+    deleted_message = crud.del_message_by_id(session=session, message_id=message_id)
+    if not deleted_message:
+        raise HTTPException(
+            status_code=404, detail="Le message supprimer n'a pas été trouvé."
+        )
+
+    return {"message": "Message supprimé."}
 
 
 # TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Possible nouvel endpoint channel list OU pas)
@@ -372,3 +411,5 @@ async def websocket_endpoint(
     except Exception as e:
         print(f"Erreur WebSocket: {e}")
         manager.disconnect(websocket, channel_id)
+
+# BUG: A reproduire, il semble que si un channel est supprimer, ses message subsiste, ce qui cause un problème 

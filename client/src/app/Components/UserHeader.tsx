@@ -15,6 +15,7 @@ const UserHeader: FC<Iprops> = ({
     }) => {
     return <>
         <div className="user-side-barre">
+            
             <img
                 src={src}
                 alt={`Avatar of ${name}`}

@@ -1,7 +1,7 @@
 from fastapi import WebSocket
 from typing import Dict, List # type: ignore
 
-# NEW: Mise en place du connectionmanager du websocket
+# Mise en place du connectionmanager du websocket
 
 class ConnectionManager:
     def __init__(self):
