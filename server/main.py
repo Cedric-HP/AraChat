@@ -81,6 +81,7 @@ async def register_profil(
     return db_profil
 
 
+# TODO: Modifier le systeme d'auth pour y intégrer des cookie qui pourront être utiliser pour le websocket
 @app.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -103,9 +104,24 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+# Endpoint qui return les info d'un profil connecter
 @app.get("/profils/me", response_model=ProfilPublic)
 async def read_profil_me(current_profil: Profil = Depends(auth.get_current_profil)):
     return current_profil
+
+
+# NEW: Endpoint pour return les info d'un profil via son ID
+@app.get("/profil/{profil_id}", response_model=ProfilPublic)
+async def get_profil_by_id(
+    profil_id: int,
+    session: Session = Depends(get_session),
+    current_profil: Profil = Depends(auth.get_current_profil),
+):
+    db_profil = crud.get_profil_by_id(session=session, profil_id=profil_id)
+    if db_profil is None:
+        raise HTTPException(status_code=404, detail="Profil non trouvé")
+
+    return db_profil
 
 
 # Endpoint pour crée un nouveau channel
@@ -186,7 +202,7 @@ async def add_member_to_a_channel(
     return updated_channel
 
 
-# NEW: Endpoint pour poster un msg dans un channel
+# Endpoint pour poster un msg dans un channel
 @app.post("/channels/{channel_id}/messages", response_model=MessagePublic)
 async def create_new_message_in_channel(
     channel_id: int,
@@ -220,7 +236,8 @@ async def create_new_message_in_channel(
 # TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Possible nouvel endpoint channel list OU pas)
 
 
-# NEW: Ajout d'un nouvel endpoint pour le websocket ("L'url à notez sera ws:// et non http://")
+# TODO: Mofifier websocket pour qu'il fonctionne via cookies et non token (les cookies c'est bon après tout :3)
+# Ajout d'un nouvel endpoint pour le websocket ("L'url à notez sera ws:// et non http://")
 # /!\ Non testé, aucune idée de si cela fonctionne correctement. /!\
 # PS: Aucune idée de comment cela fonctionne coté front :3
 @app.websocket("/ws/{channel_id}/{token}")
@@ -277,6 +294,6 @@ async def websocket_endpoint(
             await manager.broadcast(json.dumps(response_message), channel_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, channel_id)
-    except Exception as err:
-        print(f"Erreur WebSocket: {err}")
+    except Exception as e:
+        print(f"Erreur WebSocket: {e}")
         manager.disconnect(websocket, channel_id)

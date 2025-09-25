@@ -15,7 +15,6 @@ def create_channel(session: Session, channel: models.ChannelCreate, owner_id: in
 def get_channel_by_id(session: Session, channel_id: int):
     return session.get(models.Channel, channel_id)
 
-
 # Function pour get tout les channel
 def get_all_channel(session: Session, skip: int = 0, limit: int = 100):
     statement = select(models.Channel).offset(skip).limit(limit)
@@ -35,7 +34,7 @@ def add_member_to_channel(session: Session, channel: models.Channel, profil: mod
     session.refresh(channel)
     return channel
 
-# NEW: Function pour crée les message directement dans le channel
+# Function pour crée les message directement dans le channel
 def create_message_in_channel(session: Session, message_data: models.MessageCreate, channel_id: int, author_id: int):
     db_message = models.Message(
         message=message_data.message,
