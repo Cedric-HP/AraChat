@@ -76,7 +76,7 @@ def del_channel_by_id(session: Session, channel_id: int):
     return channel_to_del
 
 
-# NEW: Function pour supprimer un membre d'un channel
+# Function pour supprimer un membre d'un channel
 def del_member_in_channel(
     session: Session, channel: models.Channel, profil: models.Profil
 ):
@@ -90,3 +90,15 @@ def del_member_in_channel(
     session.refresh(channel)
 
     return channel
+
+# NEW: Function pour get un message via son ID
+def get_message_by_id(session: Session, message_id: int):
+    return session.get(models.Message, message_id)
+
+# NEW: Function pour supp un message via ID
+def del_message_by_id(session: Session, message_id: int):
+    message_to_delete=session.get(models.Message, message_id)
+    if message_to_delete:
+        session.delete(message_to_delete)
+        session.commit()
+    return message_to_delete
