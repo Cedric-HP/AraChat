@@ -1,4 +1,5 @@
 "use client";
+{/* eslint-disable @next/next/no-img-element */}
 import type { AppDispatch, RootState } from "../../lib/store";
 import { redirect, RedirectType, useSearchParams } from 'next/navigation'
 import { JSX, useCallback, useEffect, useState } from "react";
@@ -10,13 +11,14 @@ import fetchProfileAction from "@/lib/action/fetchProfile";
 import postMessageAction from "@/lib/action/postMessageAction";
 import { Message, ProfilPublic } from "@/lib/type/usersChatType";
 import fetchProfileByIdAction from "@/lib/action/fetchProfileById";
+import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
 
 export default function Chat() {
 
   const { logReg } = useSelector(
     (store: RootState) => store.utilitisesReducer
   )
-  const { token, user, currentChannelData , usersProfilList} = useSelector(
+  const { token, user, currentChannelData , usersProfilList, channelList} = useSelector(
     (store: RootState) => store.auth
   )
 
@@ -40,6 +42,7 @@ export default function Chat() {
 
   const roomId  = useSearchParams().get('roomId') || ""
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>)
+  const [channelElement, setChannelElement] = useState<JSX.Element[]>([])
   const [memberElement, setMemberElement] = useState<JSX.Element[]>([])
   const [messageElement, setMessageElement] = useState<JSX.Element[]>([])
 
@@ -105,6 +108,26 @@ export default function Chat() {
     return deletedUser
   }
 
+  // Display Channel
+
+  useEffect(()=>{
+    setChannelElement(
+      channelList.map((item, index)=>{
+        return (
+          <button key={`${item.name}_${index}_Channel`} onClick={()=>dispatch(fetchChannelsDataAction(item.id))}>
+            <img
+                src={`https://api.dicebear.com/7.x/rings/svg?seed=${item.name}`}
+                alt={`Avatar of ${item.name}`}
+                height={55}
+                width={55}
+            />
+            <span className="channel-info">{item.name}</span>
+          </button>
+        )
+      })
+    )
+  },[channelList, dispatch])
+
   // Display Owner
 
   const displayOwner = useCallback(async ()=> {
@@ -118,7 +141,7 @@ export default function Chat() {
         <>
           <UserHeader
           name={profil.name}
-          src={`https://api.dicebear.com/7.x/rings/svg?seed=${ownerSrc}`}
+          src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${ownerSrc}`}
           height={35}
           width={35}
           />
@@ -128,32 +151,11 @@ export default function Chat() {
     }
   },[currentChannelData.owner_id, getUserProfilById])
 
-  // Display Message
-
-  const displayMessage = useCallback(async (item: Message, index: number)=>{
-    let profil = await getUserProfilById(item.author_id)
-        if (profil === undefined) {
-          profil = deletedUserData(item.author_id)
-        }
-        const itemSrc = profil.name.replace(" ", "_")
-        const date = new Date(item.created_at)
-        return (
-          <div className="message" key={`${item.created_at}_${index}`}>
-            <UserHeader
-              name={profil.name}
-              src={`https://api.dicebear.com/7.x/rings/svg?seed=${itemSrc}`}
-              height={35}
-              width={35}
-            />
-            <p>{item.message}</p>
-            <span>{`${date.getFullYear()}/${date.getMonth()}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}</span>
-          </div>
-        )
-  },[getUserProfilById])
-
   useEffect(()=>{
     displayOwner()
   },[displayOwner, getUserProfilById])
+
+  // Display Member
 
   useEffect(()=>{
     setMemberElement(
@@ -164,7 +166,7 @@ export default function Chat() {
             <div key={`${index}_${item.name}`}>
               <UserHeader
                 name={item.name}
-                src={`https://api.dicebear.com/7.x/rings/svg?seed=${itemSrc}`}
+                src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${itemSrc}`}
                 height={35}
                 width={35}
                 />
@@ -177,16 +179,40 @@ export default function Chat() {
     )
   },[currentChannelData.members, currentChannelData.owner_id])
 
+   // Display Message
+
+  const displayMessage = useCallback(async (item: Message)=>{
+    let profil = await getUserProfilById(item.author_id)
+        if (profil === undefined) {
+          profil = deletedUserData(item.author_id)
+        }
+        const itemSrc = profil.name.replace(" ", "_")
+        const date = new Date(item.created_at)
+        return (
+          <>
+            <UserHeader
+              name={profil.name}
+              src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${itemSrc}`}
+              height={35}
+              width={35}
+            />
+            <p>{item.message}</p>
+            <span>{`${date.getFullYear()}/${date.getMonth()}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}</span>
+            <button>X</button>
+          </>
+        )
+  },[getUserProfilById])
+
   // Display Message List
 
   useEffect(()=>{
     setMessageElement(
       currentChannelData.messagelogs.toReversed().map((item, index)=>{
-        const element = displayMessage(item, index)
+        const element = displayMessage(item)
         return (
-          <>
+          <div className="message" key={`${item.created_at}_${index}`}>
             {element}
-          </>
+          </div>
         )
       })
     )
@@ -199,8 +225,13 @@ export default function Chat() {
     }))
   }
 
+  // Return Displayed
+
   return (
     <section id="chat-section">
+      <div id="channel-list">
+        {channelElement}
+      </div>
       <div id="chat">
         <div id="message-list">
           {messageElement}
@@ -210,7 +241,7 @@ export default function Chat() {
           <button type="submit">Envoyer</button>
         </form>
       </div>
-      <div id="users-channel">
+      <div id="members">
         <h1>{currentChannelData.name}</h1>
         <hr className="big-separator"/>
         <div id="users-list">

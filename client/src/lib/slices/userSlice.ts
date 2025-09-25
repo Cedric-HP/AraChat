@@ -121,7 +121,15 @@ const authSlice = createSlice({
         fetchProfileByIdAction.fulfilled,
         (state, action: PayloadAction<ProfilPublic>) => {
           state.status = "succeeded";
-          state.usersProfilList.push(action.payload)
+          const find = state.usersProfilList.find((item)=>item.id === action.payload.id)
+          if (find === undefined)
+            state.usersProfilList.push(action.payload)
+          else {
+            const newArray = [...state.usersProfilList]
+            let find = newArray.find((item)=>item.id === action.payload.id)
+            find = action.payload
+            state.usersProfilList = newArray
+          }
         }
       )
       .addCase(fetchProfileByIdAction.rejected, (state, action) => {

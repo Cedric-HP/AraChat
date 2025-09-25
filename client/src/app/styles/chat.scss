@@ -4,6 +4,28 @@
     width: 100vw;
     height: calc(100vh - 75px);
 }
+#channel-list{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    button{
+        border: none;
+        position: relative;
+        cursor: pointer;
+    }
+    .channel-info{
+        font-size: 1.5rem;
+        visibility: hidden;
+        position: absolute;
+        border-radius: 10px;
+        z-index: 2;
+        background-color: rgb(139, 139, 139);
+        padding: 10px;
+    }
+    button:hover .channel-info {
+        visibility: visible;
+    }
+}
 #chat {
     background-color: rgb(100, 100, 100);
     width: calc(100vw - 200px);
@@ -39,7 +61,7 @@
         }
     }
 }
-#users-channel {
+#members {
     width: 200px;
     height: 100%;
     background-color: rgb(187, 187, 187);

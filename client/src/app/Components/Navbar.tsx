@@ -1,5 +1,5 @@
 "use client"
-import { JSX, useCallback, useEffect, useState, type FC, type ReactNode } from "react";
+import { JSX, useEffect, useState, type FC, type ReactNode } from "react";
 import "../styles/navbar.scss"
 import Link from "next/link";
 import LoginRegister from "./LoginRegister";
@@ -15,13 +15,11 @@ import UserHeader from "./UserHeader";
 type IProps = {
   children: ReactNode[] | ReactNode;
 };
-type SelectData = React.ChangeEvent<HTMLSelectElement>
 
 const Navbar: FC<IProps> = ({ children }) => {
 
     const [logRegElement, setLogRegElement] = useState<JSX.Element>(<></>)
     const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
-    const [channelListElement, setChannelListElement] = useState<JSX.Element[]>([])
 
     const { token, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
@@ -44,10 +42,6 @@ const Navbar: FC<IProps> = ({ children }) => {
         }
     },[channelList, dispatch, firstFetchChannel, status])
 
-    const handleSelect = useCallback((selectData: SelectData)=>{
-        dispatch(fetchChannelsDataAction(parseInt(selectData.target.value)))
-    },[dispatch])
-
     useEffect(()=>{
         setLogRegElement(logReg ?<LoginRegister/> : <></>)
     },[logReg])
@@ -59,23 +53,13 @@ const Navbar: FC<IProps> = ({ children }) => {
     },[dispatch, token])
 
     useEffect(()=>{
-        setChannelListElement(
-            channelList.map((item, index)=>{
-                return (
-                    <option value={item.id} key={`${index}_${item.name}`}>{item.name}</option> 
-                )
-            })
-        )
-    },[channelList])
-
-    useEffect(()=>{
         if (token !== null && user !== null){
             const userSrc = user.name.replace(" ", "_")
             setAvatarElement(
                 <button>
                     <UserHeader
                     name={user.name}
-                    src={`https://api.dicebear.com/7.x/rings/svg?seed=${userSrc}`}
+                    src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userSrc}`}
                     height={55}
                     width={55}
                     />
@@ -95,13 +79,6 @@ const Navbar: FC<IProps> = ({ children }) => {
                     <ul>
                         <Link className="link" href={"/"}>Accueil</Link>
                         <Link className="link" href={"/chat"}>Chat</Link>
-                        {
-                            channelList.length !== 0 ? 
-                            <select name="channels" id="channels" onChange={handleSelect}>
-                                {channelListElement}
-                            </select>:
-                            <></>
-                        }
                     </ul>
                     {avatarElement}
                     <button onClick={()=> dispatch(displayLogRegAction())}>Afficher</button>
