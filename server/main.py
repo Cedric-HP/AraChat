@@ -15,7 +15,6 @@ from models import (
     Profil,
     ChannelCreate,
     ChannelPublic,
-    ChannelPublicWithMessages,
     ChannelPublicWitchDetails,
     MemberAdd,
     MessageCreate,
@@ -125,7 +124,8 @@ async def get_channels_list(
 
 
 # Endpoint pour get les details d'un channel
-@app.get("/channels/{channel_id}", response_model=ChannelPublicWithMessages)
+# NEW: Mise à jour du response_model de l'endpoint pour afficher la liste des membres
+@app.get("/channels/{channel_id}", response_model=ChannelPublicWitchDetails)
 async def get_channel_details(
     channel_id: int,
     session: Session = Depends(get_session),
@@ -208,3 +208,7 @@ async def create_new_message_in_channel(
     )
 
     return new_message
+
+# TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Nouvel endpoint channel list)
+
+# TODO: Ajout de websocket
