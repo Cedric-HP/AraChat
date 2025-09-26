@@ -5,9 +5,10 @@ nav {
         font-weight: 100;
         text-shadow: 0 0 7px rgba(240, 255, 255, 0.541);
         transition: all 0.2s;
-        animation: neon 1s infinite linear both;
+        animation: neon 2s infinite linear both;
     }
     background-color: rgb(145, 145, 145);
+    width: calc(100vw - 300px);
     height: 75px;
     display: flex;
     justify-content: space-between;

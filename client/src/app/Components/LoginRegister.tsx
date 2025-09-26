@@ -86,169 +86,102 @@ const LoginRegister: FC = () => {
     [handleRegister]
   );
 
-  // NEW
-
-  useEffect(() => {
-    if (status === "succeeded" && !isAuthenticated && pageState === "login") {
-      dispatch(fetchProfileAction());
-    }
-    if (isAuthenticated && user) {
-      if (dropDown === "logReg") {
-        dispatch(displayDropDownAction(""));
-      }
-      redirect("/chat", RedirectType.replace);
-    }
-  }, [dispatch, dropDown, isAuthenticated, pageState, status, user]);
-
-  // --------
-
-  useEffect(() => {
-    if (
-      initialPassword === confirmPassword &&
-      regularExpression.test(initialPassword)
-    ) {
-      setIsValid(true);
-      setPasswordFeedback("");
-      return;
-    }
-    if (
-      initialPassword.length >= 8 &&
-      !regularExpression.test(initialPassword)
-    ) {
-      setPasswordFeedback("C'est de la merde!");
-      return;
-    }
-    if (confirmPassword !== "")
-      setPasswordFeedback("Les deux mots de foutres doivent être identiques");
-    else setPasswordFeedback("");
-    if (isValid) setIsValid(false);
-  }, [confirmPassword, initialPassword, isValid]);
-
-  useEffect(() => {
-    switch (status) {
-      case "idle":
-        setStatusElement(<p></p>);
-        break;
-      case "loading":
-        setStatusElement(<p>Chargement</p>);
-        break;
-      case "succeeded":
-        setStatusElement(
-          <p className="success-feedback">
-            {pageState === "login" ? "Connexion" : "Inscription"} réussie !
-          </p>
-        );
-        if (pageState === "register") {
-          const timer = setTimeout(() => {
-            setPageState("login");
-          }, 1500);
-          return () => clearTimeout(timer);
+    useEffect(()=> {
+        if(initialPassword === confirmPassword  && regularExpression.test(initialPassword) ) {
+            setIsValid(true)
+            setPasswordFeedback("")
+            return
         }
-      case "failed":
-        setStatusElement(<p>{error}</p>);
-        break;
-    }
-  }, [dispatch, dropDown, error, pageState, status]);
+        if(initialPassword.length >= 8 && !regularExpression.test(initialPassword)){
+            setPasswordFeedback("C'est de la merde!")
+            return
+        }
+        if(confirmPassword !== "")
+            setPasswordFeedback("Les deux mots de foutres doivent être identiques")
+        else 
+            setPasswordFeedback("")
+        if(isValid)
+            setIsValid(false)
+    },[confirmPassword, initialPassword, isValid])
 
-  useEffect(() => {
-    switch (pageState) {
-      case "login":
-        setPageElement(
-          <>
-            <form onSubmit={handleSubmitLogin}>
-              <label htmlFor="name">Pseudo</label>
-              <input type="text" name="name" id="name" />
-              <label htmlFor="password">Mot de passe</label>
-              <input type="password" name="password" id="password" />
-              <input
-                className="main-action"
-                type="submit"
-                value="Se Connecter"
-              />
-              {statusElement}
-            </form>
-            <p>
-              Pas encore de compte?{" "}
-              <button
-                className="login-button"
-                onClick={() => setPageState("register")}
-              >
-                {"S'incrire"}
-              </button>
-            </p>
-          </>
-        );
-        break;
-      case "register":
-        setPageElement(
-          <>
-            <form onSubmit={handleSubmitRegister}>
-              <label htmlFor="name">Pseudo</label>
-              <input type="text" name="name" required />
-              <label htmlFor="birthdate">Date de naissance</label>
-              <input type="date" name="birthdate" required />
-              <label htmlFor="sexe">Sexe</label>
-              <select name="sexe">
-                <option value="NaN">NaN</option>
-                <option value="female">Female</option>
-                <option value="futa">Futanari</option>
-                <option value="tomboy">Tomboy</option>
-                <option value="femboy">Femboy</option>
-                <option value="male">Male</option>
-              </select>
-              <label htmlFor="password">Mot de passe</label>
-              <span>
-                {initialPassword.length < 8
-                  ? `${initialPassword.length}/8`
-                  : "Good"}
-              </span>
-              <input
-                type="password"
-                name="password"
-                onChange={handlePassword}
-                required
-              />
-              <label htmlFor="password-confirm">
-                Confirmer le Mot de passe
-              </label>
-              <input
-                type="password"
-                name="password-confirm"
-                onChange={handleConfirmPassword}
-                required
-              />
-              <p>{passwordFeedback}</p>
-              {statusElement}
-              <input
-                className="main-action"
-                type="submit"
-                value="S'Enregister"
-                disabled={!isValid}
-              />
-            </form>
-            <button
-              className="login-button"
-              onClick={() => setPageState("login")}
-            >
-              Se Connecter
-            </button>
-          </>
-        );
-        break;
-    }
-  }, [
-    handleConfirmPassword,
-    handleLogin,
-    handlePassword,
-    handleRegister,
-    handleSubmitLogin,
-    handleSubmitRegister,
-    initialPassword.length,
-    isValid,
-    pageState,
-    passwordFeedback,
-    statusElement,
-  ]);
+    useEffect(()=>{
+        switch(status) {
+            case "idle":
+                setStatusElement(<p></p>)
+                break;
+            case "loading":
+                setStatusElement(<p>Chargement</p>)
+                break;
+            case "succeeded":
+                setStatusElement(<p>{pageState === "login" ? "Connection" : "Inscription"} réussie!</p>)
+                setTimeout(()=>{
+                    if (pageState === "login") {
+                        if (dropDown === "logReg") {
+                            dispatch(displayDropDownAction(""))
+                        }
+                        redirect('/chat', RedirectType.replace)
+                    }
+                    else {
+                        setPageState("login")
+                    }
+                },1000)
+                break;
+            case "failed":
+                setStatusElement(<p>{error}</p>)
+                break;
+        }
+    },[dispatch, dropDown, error, pageState, status])
+    
+    useEffect(()=>{
+        switch(pageState){
+            case"login":
+                setPageElement(
+                    <>  
+                        <form onSubmit={handleSubmitLogin}>
+                            <label htmlFor="name">Pseudo</label>
+                            <input type="text" name="name" id="name"/>
+                            <label htmlFor="password">Mot de passe</label>
+                            <input type="password" name="password" id="password" />
+                            <input className="main-action" type="submit" value="Se Connecter"/>
+                            {statusElement}
+                        </form>
+                        <p>Pas encore de compte? <button className="login-button" onClick={()=>setPageState("register")}>{"S'incrire"}</button></p>
+                        
+                    </>
+                )
+                break
+            case"register":
+                setPageElement(
+                    <>  
+                        <form onSubmit={handleSubmitRegister}>
+                            <label htmlFor="name">Pseudo</label>
+                            <input type="text" name="name" required/>
+                            <label htmlFor="birthdate">Date de naissance</label>
+                            <input type="date" name="birthdate" required/>
+                            <label htmlFor="sexe">Sexe</label>
+                            <select name="sexe">
+                                <option value="NaN">NaN</option>
+                                <option value="female">Female</option>
+                                <option value="futa">Futanari</option>
+                                <option value="tomboy">Tomboy</option>
+                                <option value="femboy">Femboy</option>
+                                <option value="male">Male</option>
+                            </select>
+                            <label htmlFor="password">Mot de passe</label>
+                            <span>{initialPassword.length < 8 ? `${initialPassword.length}/8` : "Good"}</span>
+                            <input type="password" name="password" onChange={handlePassword} required/>
+                            <label htmlFor="password-confirm">Confirmer le Mot de passe</label>
+                            <input type="password" name="password-confirm" onChange={handleConfirmPassword} required/>
+                            <p>{passwordFeedback}</p>
+                            {statusElement}
+                            <input className={`main-action ${isValid ? "" : "is-no-valid" }`} type="submit" value="S'Enregister" disabled={!isValid}/>
+                        </form>
+                        <button className="login-button" onClick={()=>setPageState("login")}>Se Connecter</button>
+                    </>
+                )
+                break
+        }
+    },[handleConfirmPassword, handleLogin, handlePassword, handleRegister, handleSubmitLogin, handleSubmitRegister, initialPassword.length, isValid, pageState, passwordFeedback, statusElement])
 
   return (
     <>
