@@ -157,7 +157,7 @@ const LoginRegister: FC = () => {
                             <input type="password" name="password-confirm" onChange={handleConfirmPassword} required/>
                             <p>{passwordFeedback}</p>
                             {statusElement}
-                            <input className="main-action" type="submit" value="S'Enregister" disabled={!isValid}/>
+                            <input className={`main-action ${isValid ? "" : "is-no-valid" }`} type="submit" value="S'Enregister" disabled={!isValid}/>
                         </form>
                         <button className="login-button" onClick={()=>setPageState("login")}>Se Connecter</button>
                     </>

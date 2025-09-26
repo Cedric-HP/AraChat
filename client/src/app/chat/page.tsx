@@ -26,19 +26,19 @@ export default function Chat() {
 
   // Redirection
 
-  useEffect(()=>{
-    if(token === null) {
-      if(dropDown !== "logReg"){
-        dispatch(displayDropDownAction("logReg"))
-      }
-      redirect('/', RedirectType.replace)
-    }
-    else{
-      if (user === null) {
-        dispatch(fetchProfileAction())
-      }
-    }
-  },[dispatch, dropDown, token, user])
+  // useEffect(()=>{
+  //   if(token === null) {
+  //     if(dropDown !== "logReg"){
+  //       dispatch(displayDropDownAction("logReg"))
+  //     }
+  //     redirect('/', RedirectType.replace)
+  //   }
+  //   else{
+  //     if (user === null) {
+  //       dispatch(fetchProfileAction())
+  //     }
+  //   }
+  // },[dispatch, dropDown, token, user])
 
   const roomId  = useSearchParams().get('roomId') || ""
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>)
@@ -148,6 +148,7 @@ export default function Chat() {
       const ownerSrc = profil.name.replace(" ", "_")
       setOwnerElement(
         <>
+          <h3 className="member-title">Adminnistrateur</h3>
           <UserHeader
           name={profil.name}
           src={getSrc(ownerSrc)}
@@ -155,6 +156,7 @@ export default function Chat() {
           width={35}
           />
           <hr className="big-separator"/>
+          <h3  className="member-title">Membres</h3>
         </>
       )
     }
@@ -245,10 +247,12 @@ export default function Chat() {
         <div id="message-list">
           {messageElement}
         </div>
-        <form action={handleSendMessage}>
-          <input type="text" name="message" id=""  required placeholder={`Envoyer un message dans ${currentChannelData.name}`}/>
-          <button type="submit">Envoyer</button>
-        </form>
+        <div>
+          <form action={handleSendMessage}>
+            <input type="text" name="message" id=""  required placeholder={`Envoyer un message dans ${currentChannelData.name}`}/>
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
       </div>
       <div id="members">
         <h1>{currentChannelData.name}</h1>

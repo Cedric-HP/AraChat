@@ -49,8 +49,19 @@
             transform: scale(0.9);
             opacity: 0.5;
         }
+        .is-no-valid{
+            opacity: 0.5;
+        }
+        .is-no-valid:hover{
+            color:rgb(219, 219, 219);
+            background-color: black;
+        }
+        .main-action:active {
+            transform: scale(1);
+        }
     }
 }
+
 .login-button {
     border: none;
     border-radius: 10px;
