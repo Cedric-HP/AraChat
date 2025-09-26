@@ -8,12 +8,16 @@ import { redirect, RedirectType } from 'next/navigation'
 import postRegisterAction from "@/lib/action/postRegister";
 import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 
+// NEW
+import fetchProfileAction from "@/lib/action/fetchProfile";
+// -----
+
 type InputData = React.ChangeEvent<HTMLInputElement>
 const regularExpression  = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
 
 const LoginRegister: FC = () => {
 
-    const {status, error} = useSelector(
+    const {status, error, isAuthenticated, user} = useSelector(
         (store: RootState) => store.auth
     )
 
@@ -69,6 +73,19 @@ const LoginRegister: FC = () => {
         handleRegister(formData)
     }, [handleRegister])
 
+    // NEW
+    useEffect(() => {
+        if (status === 'succeeded' && !isAuthenticated && pageState === 'login') {
+            dispatch(fetchProfileAction());
+        }
+        if (isAuthenticated && user) {
+            if(dropDown === 'logReg') {
+                dispatch(displayDropDownAction(""))
+            }
+            redirect('/chat', RedirectType.replace)
+        }
+    }, [dispatch, dropDown, isAuthenticated, pageState, status, user])
+    // --------
     useEffect(()=> {
         if(initialPassword === confirmPassword  && regularExpression.test(initialPassword) ) {
             setIsValid(true)
@@ -115,6 +132,7 @@ const LoginRegister: FC = () => {
         }
     },[dispatch, dropDown, error, pageState, status])
     
+    // Pose problème avec la nouvelle logique de login, a revoir
     useEffect(()=>{
         switch(pageState){
             case"login":

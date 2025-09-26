@@ -10,23 +10,11 @@ type FetchUserDataPaylaod = {
   password: string;
 };
 
-type ApiToken = {
-  res: string;
-  access_token: string;
-  token_type: "bearer";
-};
-
-type Message = {
-  id: number;
-  author_id: number;
-  created_at: string;
-  message: string;
-};
-
-type MessageAdd = {
-  message: string;
-  channel_id: number;
-}
+// type ApiToken = {
+//   res: string;
+//   access_token: string;
+//   token_type: "bearer";
+// };
 
 type ChannelPublic = {
   id: number;
@@ -35,33 +23,44 @@ type ChannelPublic = {
   owner_id: number | null;
 };
 
-type ChannelPublicList = [
-  ChannelPublic
-]
-
-type MemberAdd = {
-  id: number,
-  user_id: number
-}
+type ChannelPublicList = ChannelPublic[];
 
 type ChannelCreate = {
-  name: string,
-  desc?: string
-}
+  name: string;
+  desc?: string;
+};
 
 type ChannelData = {
   id: number;
   name: string;
   desc?: string;
   owner_id: number | null;
-  members: ProfilPublic[]
+  members: ProfilPublic[];
   messagelogs: Message[];
-}
-
-type RegisterRedux = {
-  res: string;
-  fetchState: string;
 };
+
+type MemberAdd = {
+  id: number;
+  user_id: number;
+};
+
+type Message = {
+  id: number;
+  author_id: number;
+  channel_id: number;
+  created_at: string;
+  message: string;
+};
+
+type MessageAdd = {
+  message: string;
+  channel_id: number;
+};
+
+// type RegisterRedux = {
+//   res: string;
+//   fetchState: string;
+// };
 
 type Register = {
   name: string;
@@ -70,26 +69,26 @@ type Register = {
   password: string;
 };
 
-type DropDown = "" | "logReg"
+type DropDown = "" | "logReg";
 
 type Utilitise = {
   dropDown: DropDown;
-  firstFetchChannel: boolean
+  firstFetchChannel: boolean;
 };
 
 export type {
   ProfilPublic,
-  ApiToken,
+  // ApiToken,
   Message,
   ChannelPublic,
   FetchUserDataPaylaod,
   Register,
-  RegisterRedux,
+  // RegisterRedux,
   Utilitise,
   ChannelPublicList,
   ChannelData,
   ChannelCreate,
   MemberAdd,
   MessageAdd,
-  DropDown
+  DropDown,
 };

@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ProfilPublic,
-  ApiToken,
   ChannelPublic,
   ChannelPublicList,
   ChannelData,
@@ -90,15 +89,15 @@ const authSlice = createSlice({
       })
       .addCase(
         fetchUserDataAction.fulfilled,
-        (state, action: PayloadAction<ApiToken>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (state, _action: PayloadAction<boolean>) => {
           state.status = "succeeded";
-          state.token = action.payload.access_token;
         }
       )
       .addCase(fetchUserDataAction.rejected, (state, action) => {
         state.status = "failed";
-        state.token = null;
         state.user = null;
+        state.isAuthenticated = false;
         state.error = action.error.message || "Échec de la connexion";
       })
 
@@ -111,13 +110,13 @@ const authSlice = createSlice({
         (state, action: PayloadAction<ProfilPublic>) => {
           state.status = "succeeded";
           state.user = action.payload;
+          state.isAuthenticated = true;
         }
       )
       .addCase(fetchProfile.rejected, (state, action) => {
         state.status = "failed";
         state.user = null;
-        state.token = null;
-        localStorage.removeItem("authToken");
+        state.isAuthenticated = false;
         state.error =
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";
@@ -138,6 +137,7 @@ const authSlice = createSlice({
           else {
             const newArray = [...state.usersProfilList];
             let find = newArray.find((item) => item.id === action.payload.id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             find = action.payload;
             state.usersProfilList = newArray;
           }
@@ -241,5 +241,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, addLiveMessage } = authSlice.actions;
 export default authSlice.reducer;
