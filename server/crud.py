@@ -23,8 +23,6 @@ def get_all_channel(session: Session, skip: int = 0, limit: int = 100):
 
 
 # Funciton pour récupérer un profil par son ID
-
-
 def get_profil_by_id(session: Session, profil_id: int):
     return session.get(models.Profil, profil_id)
 
@@ -39,8 +37,6 @@ def del_profil_by_id(session: Session, profil_id: int):
 
 
 # Function pour ajouter un membre à un channel
-
-
 def add_member_to_channel(
     session: Session, channel: models.Channel, profil: models.Profil
 ):
@@ -91,13 +87,15 @@ def del_member_in_channel(
 
     return channel
 
+
 # NEW: Function pour get un message via son ID
 def get_message_by_id(session: Session, message_id: int):
     return session.get(models.Message, message_id)
 
+
 # NEW: Function pour supp un message via ID
 def del_message_by_id(session: Session, message_id: int):
-    message_to_delete=session.get(models.Message, message_id)
+    message_to_delete = session.get(models.Message, message_id)
     if message_to_delete:
         session.delete(message_to_delete)
         session.commit()

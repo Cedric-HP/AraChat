@@ -7,9 +7,8 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
     Response,
-    Cookie,
 )
-from typing import Annotated, Optional  # type: ignore
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session

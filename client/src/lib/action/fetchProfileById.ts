@@ -5,7 +5,7 @@ const fetchProfileByIdAction = createAsyncThunk<ProfilPublic, number>(
   "auth/fetchProfileById",
   async (id, { rejectWithValue }) => {
     try {
-      const data = await authFetch(`/profils/${id}`);
+      const data = await authFetch(`/profil/${id}`);
       return data;
     } catch (err) {
       return rejectWithValue(err);

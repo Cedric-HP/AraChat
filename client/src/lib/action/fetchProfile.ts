@@ -8,8 +8,9 @@ const fetchProfileAction = createAsyncThunk<ProfilPublic, void>(
     try {
       const data = await authFetch("/profils/me");
       return data;
-    } catch (err) {
-      return rejectWithValue(err);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      return rejectWithValue(err.message);
     }
   }
 );
