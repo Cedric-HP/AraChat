@@ -88,12 +88,12 @@ def del_member_in_channel(
     return channel
 
 
-# NEW: Function pour get un message via son ID
+# Function pour get un message via son ID
 def get_message_by_id(session: Session, message_id: int):
     return session.get(models.Message, message_id)
 
 
-# NEW: Function pour supp un message via ID
+# Function pour supp un message via ID
 def del_message_by_id(session: Session, message_id: int):
     message_to_delete = session.get(models.Message, message_id)
     if message_to_delete:

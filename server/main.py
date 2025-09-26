@@ -82,7 +82,7 @@ async def register_profil(
     return db_profil
 
 
-# NEW: Grosse modification, le token est dans le cookie lol
+# Grosse modification, le token est dans le cookie lol
 @app.post("/token")
 async def login_for_access_token(
     response: Response,
@@ -370,26 +370,8 @@ async def websocket_endpoint(
     session: Session = Depends(get_session),
     current_profil: Profil = Depends(auth.get_current_profil)
 ):
-    # Récupération du token via cookie (parceque c'est bon les cookie)
-    # if access_token is None:
-    #     await websocket.close(code=1008)
-    #     return
 
-    # try:
-    #     token_type, token = access_token.split(" ")
-    #     if token_type.lower() != "bearer":
-    #         raise ValueError("Invalid token type")
-    # except ValueError:
-    #     await websocket.close(code=1008)
-    #     return
-    # try:
-    #     current_profil = auth.get_current_profil(token=token, session=session)
-    # except HTTPException:
-    #     await websocket.close(code=1008)
-    #     return
-    # -----------------------------------------------------------------------------
-
-    # Deuxième étape: Ont vérifie que l'user à bien accès au channel
+    # On vérifie que l'user à bien accès au channel
     db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
     if not db_channel:
         await websocket.close(code=1007)
@@ -402,7 +384,7 @@ async def websocket_endpoint(
         await websocket.close(code=1008)
         return
 
-    # Troisième étape: Ont accèpte et ont gère la connexion si tout est bon
+    # On accèpte et ont gère la connexion si tout est bon
     await manager.connect(websocket, channel_id)
     try:
         # Petite boucle infinie pour listen les msg du client
@@ -422,6 +404,7 @@ async def websocket_endpoint(
                 "message": new_msg.message,
                 "author_name": current_profil.name,
                 "author_id": current_profil.id,
+                "channel_id": new_msg.channel_id,
                 "created_at": new_msg.created_at.isoformat(),
             }
             # On diffuse le msg

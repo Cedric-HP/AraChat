@@ -48,9 +48,9 @@ def get_current_profil(
     )
     if access_token is None:
         raise credential_exception
-    
+
     try:
-        token_type, token =access_token.split(" ")
+        token_type, token = access_token.split(" ")
         if token_type.lower() != "bearer":
             raise ValueError("Invalid token type")
     except ValueError:

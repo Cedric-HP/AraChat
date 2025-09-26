@@ -84,7 +84,6 @@ export default function Chat() {
       ws.onmessage = (event) => {
         try {
           const newMess: Message = JSON.parse(event.data);
-          newMess.channel_id = currentChannelData.id
           console.log("Message received:", newMess);
           dispatch(addLiveMessage(newMess));
         } catch (err) {
