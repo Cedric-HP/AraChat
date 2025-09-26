@@ -25,6 +25,7 @@ nav {
             font-size: 1.5rem;
             text-decoration: none;
             color: azure;
+            transition: background-color 0.2s;
         }
         a:hover, select:hover {
             background-color: rgb(179, 179, 179);
@@ -40,6 +41,38 @@ nav {
             }
         }
     }
+    #login-button-nav{
+        border: none;
+        border-radius: 10px;
+        background-color: black;
+        font-family: "Nosifer", sans-serif;
+        font-size: 1rem;
+        width: fit-content;
+        padding: 5px 15px;
+        color:rgb(219, 219, 219);
+        transition: background-color 0.2s, color 0.2s, transform 0.1s, opacity 0.1s;
+    }
+    #login-button-nav:hover {
+        background-color: rgb(219, 219, 219);
+        color:black;
+    }
+    #login-button-nav:active {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+}
+
+.close-button{
+    border: none;
+    background-color: transparent;
+    font-size: 1.5rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    color: black;
+}
+.close-button:hover {
+    color: rgb(255, 0, 0);
+    transform: scale(1.2);
 }
 
 @keyframes neon {

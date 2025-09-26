@@ -125,10 +125,10 @@ const LoginRegister: FC = () => {
                             <input type="text" name="name" id="name"/>
                             <label htmlFor="password">Mot de passe</label>
                             <input type="password" name="password" id="password" />
-                            <input type="submit" value="Se Connecter"/>
+                            <input className="main-action" type="submit" value="Se Connecter"/>
                             {statusElement}
                         </form>
-                        <p>Pas encor de compte? <button onClick={()=>setPageState("register")}>{"S'incrire"}</button></p>
+                        <p>Pas encore de compte? <button className="login-button" onClick={()=>setPageState("register")}>{"S'incrire"}</button></p>
                         
                     </>
                 )
@@ -157,9 +157,9 @@ const LoginRegister: FC = () => {
                             <input type="password" name="password-confirm" onChange={handleConfirmPassword} required/>
                             <p>{passwordFeedback}</p>
                             {statusElement}
-                            <input type="submit" value="S'Enregister" disabled={!isValid}/>
+                            <input className="main-action" type="submit" value="S'Enregister" disabled={!isValid}/>
                         </form>
-                        <button onClick={()=>setPageState("login")}>Se Connecter</button>
+                        <button className="login-button" onClick={()=>setPageState("login")}>Se Connecter</button>
                     </>
                 )
                 break
@@ -169,7 +169,7 @@ const LoginRegister: FC = () => {
     return (
         <>
             <div id="log-reg">
-                <button onClick={()=>dispatch(displayDropDownAction(""))}>X</button>
+                <button className="close-button" onClick={()=>dispatch(displayDropDownAction(""))}>X</button>
                 {pageElement}
             </div>
         </>

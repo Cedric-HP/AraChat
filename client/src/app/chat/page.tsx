@@ -207,7 +207,7 @@ export default function Chat() {
             />
             <p>{item.message}</p>
             <span>{`${date.getFullYear()}/${date.getMonth()}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}</span>
-            {user?.id === profil.id ? <button className="message-remove">X</button> : <></>}
+            {user?.id === profil.id ? <button className="close-button message-remove">X</button> : <></>}
           </>
         )
   },[getUserProfilById, user?.id])

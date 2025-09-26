@@ -1,5 +1,5 @@
 "use client"
-import { JSX, useCallback, useEffect, useState, type FC, type ReactNode } from "react";
+import { JSX, useEffect, useState, type FC, type ReactNode } from "react";
 import "../styles/navbar.scss"
 import Link from "next/link";
 import LoginRegister from "./LoginRegister";
@@ -11,6 +11,7 @@ import setStatusToIdleAction from "@/lib/action/setStatusToIdle";
 import firstFetchChannelAction from "@/lib/action/UtilitisesActions/firstFetchChannelAction";
 import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
 import UserHeader from "./UserHeader";
+import MainDropDown from "./MainDropDown";
 
 type IProps = {
   children: ReactNode[] | ReactNode;
@@ -20,6 +21,7 @@ const Navbar: FC<IProps> = ({ children }) => {
 
     const [dropDownElement, setDropDownElement] = useState<JSX.Element>(<></>)
     const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
+    const [displayDropDown, setDisplayDropDown] = useState<boolean>(false)
 
     const { token, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
@@ -62,7 +64,7 @@ const Navbar: FC<IProps> = ({ children }) => {
         if (token !== null && user !== null){
             const userSrc = user.name.replace(" ", "_")
             setAvatarElement(
-                <button>
+                <button onClick={()=>setDisplayDropDown((prevState)=> !prevState)}>
                     <UserHeader
                     name={user.name}
                     src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userSrc}`}
@@ -73,7 +75,10 @@ const Navbar: FC<IProps> = ({ children }) => {
 
             )
         }
-    },[token, user])
+        else {
+            setAvatarElement(<button id="login-button-nav" onClick={()=> dispatch(displayDropDownAction(dropDown === "logReg" ? "" : "logReg"))}>Se Connecter</button>)
+        }
+    },[dispatch, dropDown, token, user])
     
     return (
         <>
@@ -87,10 +92,10 @@ const Navbar: FC<IProps> = ({ children }) => {
                         <Link className="link" href={"/chat"}>Chat</Link>
                     </ul>
                     {avatarElement}
-                    <button onClick={useCallback(()=> dispatch(displayDropDownAction(dropDown === "logReg" ? "" : "logReg")),[dispatch, dropDown])}>Se Connecter</button>
                 </nav>
             </header>
             <main>
+                {(token !== null && displayDropDown) ? <MainDropDown/> : <></>}
                 {dropDownElement}
                 {children}
             </main>
