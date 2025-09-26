@@ -23,7 +23,7 @@ const Navbar: FC<IProps> = ({ children }) => {
     const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
     const [displayDropDown, setDisplayDropDown] = useState<boolean>(false)
 
-    const { token, channelList, status, user } = useSelector(
+    const { isAuthenticated, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
     )
 
@@ -33,7 +33,7 @@ const Navbar: FC<IProps> = ({ children }) => {
     const dispatch: AppDispatch = useDispatch()
 
     useEffect(()=>{
-        if (token !== null && status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
+        if (isAuthenticated && status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
             dispatch(fetchChannelsDataAction(channelList[0].id));
             dispatch(firstFetchChannelAction());
         }
@@ -42,7 +42,7 @@ const Navbar: FC<IProps> = ({ children }) => {
                 dispatch(setStatusToIdleAction())
             },1000)
         }
-    },[channelList, dispatch, firstFetchChannel, status, token])
+    },[channelList, dispatch, firstFetchChannel, isAuthenticated, status])
 
     useEffect(()=>{
         switch(dropDown) {
@@ -55,13 +55,13 @@ const Navbar: FC<IProps> = ({ children }) => {
     },[dropDown])
 
     useEffect(()=>{
-        if(token !== null) {
+        if(isAuthenticated) {
             dispatch(fetchChannelsListAction())
         }
-    },[dispatch, token])
+    },[dispatch, isAuthenticated])
 
     useEffect(()=>{
-        if (token !== null && user !== null){
+        if (isAuthenticated && user !== null){
             const userSrc = user.name.replace(" ", "_")
             setAvatarElement(
                 <button onClick={()=>setDisplayDropDown((prevState)=> !prevState)}>
@@ -78,7 +78,7 @@ const Navbar: FC<IProps> = ({ children }) => {
         else {
             setAvatarElement(<button id="login-button-nav" onClick={()=> dispatch(displayDropDownAction(dropDown === "logReg" ? "" : "logReg"))}>Se Connecter</button>)
         }
-    },[dispatch, dropDown, token, user])
+    },[dispatch, dropDown, isAuthenticated, user])
     
     return (
         <>
@@ -95,7 +95,7 @@ const Navbar: FC<IProps> = ({ children }) => {
                 </nav>
             </header>
             <main>
-                {(token !== null && displayDropDown) ? <MainDropDown/> : <></>}
+                {(isAuthenticated && displayDropDown) ? <MainDropDown/> : <></>}
                 {dropDownElement}
                 {children}
             </main>

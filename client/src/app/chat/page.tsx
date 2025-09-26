@@ -37,19 +37,19 @@ export default function Chat() {
 
   // Redirection
 
-  // useEffect(()=>{
-  //   if(token === null) {
-  //     if(dropDown !== "logReg"){
-  //       dispatch(displayDropDownAction("logReg"))
-  //     }
-  //     redirect('/', RedirectType.replace)
-  //   }
-  //   else{
-  //     if (user === null) {
-  //       dispatch(fetchProfileAction())
-  //     }
-  //   }
-  // },[dispatch, dropDown, token, user])
+  useEffect(()=>{
+    if(!isAuthenticated) {
+      if(dropDown !== "logReg"){
+        dispatch(displayDropDownAction("logReg"))
+      }
+      redirect('/', RedirectType.replace)
+    }
+    else{
+      if (user === null) {
+        dispatch(fetchProfileAction())
+      }
+    }
+  },[dispatch, dropDown, isAuthenticated, user])
 
   const roomId = useSearchParams().get("roomId") || "";
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>);
@@ -303,7 +303,7 @@ export default function Chat() {
           {messageElement}
         </div>
         <div>
-          <form action={handleSendMessage}>
+          <form onSubmit={handleSendMessage}>
             <input type="text" name="message" id=""  required placeholder={`Envoyer un message dans ${currentChannelData.name}`}/>
             <button type="submit">Envoyer</button>
           </form>
