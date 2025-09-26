@@ -10,7 +10,7 @@ export async function authFetch(endpoint: string, options: RequestInit = {}) {
   };
 
   try {
-    const response = await fetch(`http:localhost:8000${endpoint}`, fetchOptions)
+    const response = await fetch(`http://localhost:8000${endpoint}`, fetchOptions)
 
     if (!response.ok) {
         throw new Error(`Http error. status: ${response.status}`);
