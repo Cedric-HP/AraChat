@@ -55,7 +55,7 @@ export default function Chat() {
   // WebSocket Part
 
   useEffect(()=>{
-    const ws = new WebSocket(`ws://localhost:8000/ws/${currentChannelData.id}/${token}`)
+    const ws = new WebSocket(`ws://localhost:8000/ws/${currentChannelData.id}`)
     ws.onopen = () => {
       console.log('Connected to WebSocket');
     };

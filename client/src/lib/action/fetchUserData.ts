@@ -1,9 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ApiToken, FetchUserDataPaylaod } from "../type/usersChatType";
+import { FetchUserDataPaylaod } from "../type/usersChatType";
 
-const fetchUserDataAction = createAsyncThunk<ApiToken, FetchUserDataPaylaod>(
+const fetchUserDataAction = createAsyncThunk<boolean, FetchUserDataPaylaod>(
   "auth/fetchUserData",
-  async ({ name, password }) => {
+  async ({ name, password }, { rejectWithValue }) => {
     try {
       const formBody = new URLSearchParams();
       formBody.append("username", name);
@@ -15,19 +15,17 @@ const fetchUserDataAction = createAsyncThunk<ApiToken, FetchUserDataPaylaod>(
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: formBody.toString(),
+        credentials: "include",
       });
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.detail || `Http error. status: ${res.status}`);
       }
 
-      const data: ApiToken = await res.json();
-      localStorage.setItem("authToken", data.access_token);
-      return data;
+      
+      return true;
     } catch (err) {
-      console.error(err);
-      localStorage.removeItem("authToken");
-      throw err;
+      return rejectWithValue(err);
     }
   }
 );

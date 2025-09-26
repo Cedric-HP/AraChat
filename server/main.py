@@ -369,25 +369,25 @@ async def websocket_endpoint(
     websocket: WebSocket,
     channel_id: int,
     session: Session = Depends(get_session),
-    access_token: Annotated[Optional[str], Cookie()] = None,
+    current_profil: Profil = Depends(auth.get_current_profil)
 ):
-    # NEW: Récupération du token via cookie (parceque c'est bon les cookie)
-    if access_token is None:
-        await websocket.close(code=1008)
-        return
+    # Récupération du token via cookie (parceque c'est bon les cookie)
+    # if access_token is None:
+    #     await websocket.close(code=1008)
+    #     return
 
-    try:
-        token_type, token = access_token.split(" ")
-        if token_type.lower() != "bearer":
-            raise ValueError("Invalid token type")
-    except ValueError:
-        await websocket.close(code=1008)
-        return
-    try:
-        current_profil = auth.get_current_profil(token=token, session=session)
-    except HTTPException:
-        await websocket.close(code=1008)
-        return
+    # try:
+    #     token_type, token = access_token.split(" ")
+    #     if token_type.lower() != "bearer":
+    #         raise ValueError("Invalid token type")
+    # except ValueError:
+    #     await websocket.close(code=1008)
+    #     return
+    # try:
+    #     current_profil = auth.get_current_profil(token=token, session=session)
+    # except HTTPException:
+    #     await websocket.close(code=1008)
+    #     return
     # -----------------------------------------------------------------------------
 
     # Deuxième étape: Ont vérifie que l'user à bien accès au channel
