@@ -293,15 +293,6 @@ export default function Chat() {
     );
   }, [currentChannelData.messagelogs, displayMessage, getUserProfilById]);
 
-  // const handleSendMessage = (formData: FormData) => {
-  //   dispatch(
-  //     postMessageAction({
-  //       channel_id: currentChannelData.id,
-  //       message: String(formData.get("message")),
-  //     })
-  //   );
-  // };
-
   // Return Displayed
 
   return (
