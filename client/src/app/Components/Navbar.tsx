@@ -1,11 +1,11 @@
 "use client"
-import { JSX, useEffect, useState, type FC, type ReactNode } from "react";
+import { JSX, useCallback, useEffect, useState, type FC, type ReactNode } from "react";
 import "../styles/navbar.scss"
 import Link from "next/link";
 import LoginRegister from "./LoginRegister";
 import type { AppDispatch, RootState } from "../../lib/store";
 import { useDispatch, useSelector } from "react-redux";
-import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 import fetchChannelsListAction from "@/lib/action/fetchChannelsList";
 import setStatusToIdleAction from "@/lib/action/setStatusToIdle";
 import firstFetchChannelAction from "@/lib/action/UtilitisesActions/firstFetchChannelAction";
@@ -18,20 +18,20 @@ type IProps = {
 
 const Navbar: FC<IProps> = ({ children }) => {
 
-    const [logRegElement, setLogRegElement] = useState<JSX.Element>(<></>)
+    const [dropDownElement, setDropDownElement] = useState<JSX.Element>(<></>)
     const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
 
     const { token, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
     )
 
-    const { logReg, firstFetchChannel } = useSelector(
+    const { dropDown, firstFetchChannel } = useSelector(
         (store: RootState) => store.utilitisesReducer
     )
     const dispatch: AppDispatch = useDispatch()
 
     useEffect(()=>{
-        if (status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
+        if (token !== null && status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
             dispatch(fetchChannelsDataAction(channelList[0].id));
             dispatch(firstFetchChannelAction());
         }
@@ -40,11 +40,17 @@ const Navbar: FC<IProps> = ({ children }) => {
                 dispatch(setStatusToIdleAction())
             },1000)
         }
-    },[channelList, dispatch, firstFetchChannel, status])
+    },[channelList, dispatch, firstFetchChannel, status, token])
 
     useEffect(()=>{
-        setLogRegElement(logReg ?<LoginRegister/> : <></>)
-    },[logReg])
+        switch(dropDown) {
+            case "logReg":
+                setDropDownElement(<LoginRegister/>)
+                break;
+            case "":
+                setDropDownElement(<></>)
+        }
+    },[dropDown])
 
     useEffect(()=>{
         if(token !== null) {
@@ -81,11 +87,11 @@ const Navbar: FC<IProps> = ({ children }) => {
                         <Link className="link" href={"/chat"}>Chat</Link>
                     </ul>
                     {avatarElement}
-                    <button onClick={()=> dispatch(displayLogRegAction())}>Afficher</button>
+                    <button onClick={useCallback(()=> dispatch(displayDropDownAction(dropDown === "logReg" ? "" : "logReg")),[dispatch, dropDown])}>Se Connecter</button>
                 </nav>
             </header>
             <main>
-                {logRegElement}
+                {dropDownElement}
                 {children}
             </main>
         </>

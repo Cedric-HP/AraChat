@@ -6,7 +6,7 @@ import { JSX, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "../styles/chat.scss"
 import UserHeader from "../Components/UserHeader";
-import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 import fetchProfileAction from "@/lib/action/fetchProfile";
 import postMessageAction from "@/lib/action/postMessageAction";
 import { Message, ProfilPublic } from "@/lib/type/usersChatType";
@@ -15,7 +15,7 @@ import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
 
 export default function Chat() {
 
-  const { logReg } = useSelector(
+  const { dropDown } = useSelector(
     (store: RootState) => store.utilitisesReducer
   )
   const { token, user, currentChannelData , usersProfilList, channelList} = useSelector(
@@ -28,8 +28,8 @@ export default function Chat() {
 
   useEffect(()=>{
     if(token === null) {
-      if(!logReg){
-        dispatch(displayLogRegAction())
+      if(dropDown !== "logReg"){
+        dispatch(displayDropDownAction("logReg"))
       }
       redirect('/', RedirectType.replace)
     }
@@ -38,7 +38,7 @@ export default function Chat() {
         dispatch(fetchProfileAction())
       }
     }
-  },[dispatch, logReg, token, user])
+  },[dispatch, dropDown, token, user])
 
   const roomId  = useSearchParams().get('roomId') || ""
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>)
@@ -55,20 +55,29 @@ export default function Chat() {
   // WebSocket Part
 
   useEffect(()=>{
-    const ws = new WebSocket(`ws://localhost:8000/ws/${currentChannelData.id}/${token}`)
-    ws.onopen = () => {
-      console.log('Connected to WebSocket');
-    };
-    ws.onmessage = (event) => {
-      console.log('Message received:', event.data);
-    };
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-    return () => {
-      ws.close();
-    };
+    if (token !== null) {
+      const ws = new WebSocket(`ws://localhost:8000/ws/${currentChannelData.id}/${token}`)
+      ws.onopen = () => {
+        console.log(`Connected to WebSocket : ${`ws://localhost:8000/ws/${currentChannelData.id}/${token}`}`);
+      };
+      ws.onmessage = (event) => {
+        console.log('Message received:', event.data);
+      };
+      ws.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
+      return () => {
+        ws.close();
+      };
+    }
   },[currentChannelData, token])
+
+  const getSrc = (name: string) => {
+    if (name.includes("deleted_User_")){
+      return `https://api.dicebear.com/7.x/rings/svg?seed=${name}`
+    }
+    return `https://api.dicebear.com/9.x/adventurer/svg?seed=${name}`
+  }
 
   const findUserInArray = useCallback((id: number)=> {
       return usersProfilList.find((item)=>item.id === id)
@@ -141,7 +150,7 @@ export default function Chat() {
         <>
           <UserHeader
           name={profil.name}
-          src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${ownerSrc}`}
+          src={getSrc(ownerSrc)}
           height={35}
           width={35}
           />
@@ -166,7 +175,7 @@ export default function Chat() {
             <div key={`${index}_${item.name}`}>
               <UserHeader
                 name={item.name}
-                src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${itemSrc}`}
+                src={getSrc(itemSrc)}
                 height={35}
                 width={35}
                 />
@@ -192,16 +201,16 @@ export default function Chat() {
           <>
             <UserHeader
               name={profil.name}
-              src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${itemSrc}`}
+              src={getSrc(itemSrc)}
               height={35}
               width={35}
             />
             <p>{item.message}</p>
             <span>{`${date.getFullYear()}/${date.getMonth()}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}</span>
-            <button>X</button>
+            {user?.id === profil.id ? <button className="message-remove">X</button> : <></>}
           </>
         )
-  },[getUserProfilById])
+  },[getUserProfilById, user?.id])
 
   // Display Message List
 
