@@ -8,15 +8,13 @@ import { redirect, RedirectType } from "next/navigation";
 import postRegisterAction from "@/lib/action/postRegister";
 import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 
-// NEW
-import fetchProfileAction from "@/lib/action/fetchProfile";
 // -----
 
 type InputData = React.ChangeEvent<HTMLInputElement>;
 const regularExpression = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/;
 
 const LoginRegister: FC = () => {
-  const { status, error, isAuthenticated, user } = useSelector(
+  const { status, error } = useSelector(
     (store: RootState) => store.auth
   );
 
