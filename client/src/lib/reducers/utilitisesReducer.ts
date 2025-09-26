@@ -1,19 +1,19 @@
 
 import { createReducer } from "@reduxjs/toolkit"
 import { Utilitise } from "../type/usersChatType"
-import displayLogRegAction from "../action/UtilitisesActions/displayLogRegAction"
+import displayLogRegAction from "../action/UtilitisesActions/displayDropDownAction"
 import firstFetchChannelAction from "../action/UtilitisesActions/firstFetchChannelAction"
 
 const initialState: Utilitise = {
-    logReg: false,
+    dropDown: "",
     firstFetchChannel: false
 }
 
 const utilitisesReducer = createReducer<Utilitise>(
     initialState,
     (builder) => {
-        builder.addCase(displayLogRegAction, (state) => {
-            state.logReg = !state.logReg
+        builder.addCase(displayLogRegAction, (state, action) => {
+            state.dropDown = action.payload
         }).addCase(firstFetchChannelAction, (state) => {
             state.firstFetchChannel = true
         })

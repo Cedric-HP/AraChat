@@ -145,7 +145,7 @@ const authSlice = createSlice({
       )
       .addCase(fetchProfileByIdAction.rejected, (state, action) => {
         state.status = "failed";
-        state.error =
+        state.error = 
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";
       })

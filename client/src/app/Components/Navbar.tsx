@@ -5,12 +5,13 @@ import Link from "next/link";
 import LoginRegister from "./LoginRegister";
 import type { AppDispatch, RootState } from "../../lib/store";
 import { useDispatch, useSelector } from "react-redux";
-import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 import fetchChannelsListAction from "@/lib/action/fetchChannelsList";
 import setStatusToIdleAction from "@/lib/action/setStatusToIdle";
 import firstFetchChannelAction from "@/lib/action/UtilitisesActions/firstFetchChannelAction";
 import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
 import UserHeader from "./UserHeader";
+import MainDropDown from "./MainDropDown";
 
 type IProps = {
   children: ReactNode[] | ReactNode;
@@ -18,20 +19,21 @@ type IProps = {
 
 const Navbar: FC<IProps> = ({ children }) => {
 
-    const [logRegElement, setLogRegElement] = useState<JSX.Element>(<></>)
+    const [dropDownElement, setDropDownElement] = useState<JSX.Element>(<></>)
     const [avatarElement, setAvatarElement] = useState<JSX.Element>(<></>)
+    const [displayDropDown, setDisplayDropDown] = useState<boolean>(false)
 
     const { token, channelList, status, user } = useSelector(
         (store: RootState) => store.auth
     )
 
-    const { logReg, firstFetchChannel } = useSelector(
+    const { dropDown, firstFetchChannel } = useSelector(
         (store: RootState) => store.utilitisesReducer
     )
     const dispatch: AppDispatch = useDispatch()
 
     useEffect(()=>{
-        if (status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
+        if (token !== null && status === "succeeded" && channelList.length !== 0 && !firstFetchChannel) {
             dispatch(fetchChannelsDataAction(channelList[0].id));
             dispatch(firstFetchChannelAction());
         }
@@ -40,11 +42,17 @@ const Navbar: FC<IProps> = ({ children }) => {
                 dispatch(setStatusToIdleAction())
             },1000)
         }
-    },[channelList, dispatch, firstFetchChannel, status])
+    },[channelList, dispatch, firstFetchChannel, status, token])
 
     useEffect(()=>{
-        setLogRegElement(logReg ?<LoginRegister/> : <></>)
-    },[logReg])
+        switch(dropDown) {
+            case "logReg":
+                setDropDownElement(<LoginRegister/>)
+                break;
+            case "":
+                setDropDownElement(<></>)
+        }
+    },[dropDown])
 
     useEffect(()=>{
         if(token !== null) {
@@ -56,7 +64,7 @@ const Navbar: FC<IProps> = ({ children }) => {
         if (token !== null && user !== null){
             const userSrc = user.name.replace(" ", "_")
             setAvatarElement(
-                <button>
+                <button onClick={()=>setDisplayDropDown((prevState)=> !prevState)}>
                     <UserHeader
                     name={user.name}
                     src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userSrc}`}
@@ -67,7 +75,10 @@ const Navbar: FC<IProps> = ({ children }) => {
 
             )
         }
-    },[token, user])
+        else {
+            setAvatarElement(<button id="login-button-nav" onClick={()=> dispatch(displayDropDownAction(dropDown === "logReg" ? "" : "logReg"))}>Se Connecter</button>)
+        }
+    },[dispatch, dropDown, token, user])
     
     return (
         <>
@@ -81,11 +92,11 @@ const Navbar: FC<IProps> = ({ children }) => {
                         <Link className="link" href={"/chat"}>Chat</Link>
                     </ul>
                     {avatarElement}
-                    <button onClick={()=> dispatch(displayLogRegAction())}>Afficher</button>
                 </nav>
             </header>
             <main>
-                {logRegElement}
+                {(token !== null && displayDropDown) ? <MainDropDown/> : <></>}
+                {dropDownElement}
                 {children}
             </main>
         </>

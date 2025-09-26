@@ -70,8 +70,10 @@ type Register = {
   password: string;
 };
 
+type DropDown = "" | "logReg"
+
 type Utilitise = {
-  logReg: boolean;
+  dropDown: DropDown;
   firstFetchChannel: boolean
 };
 
@@ -88,5 +90,6 @@ export type {
   ChannelData,
   ChannelCreate,
   MemberAdd,
-  MessageAdd
+  MessageAdd,
+  DropDown
 };

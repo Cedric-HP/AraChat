@@ -6,7 +6,7 @@ import fetchUserDataAction from "@/lib/action/fetchUserData";
 import { useDispatch, useSelector } from "react-redux";
 import { redirect, RedirectType } from 'next/navigation'
 import postRegisterAction from "@/lib/action/postRegister";
-import displayLogRegAction from "@/lib/action/UtilitisesActions/displayLogRegAction";
+import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 
 type InputData = React.ChangeEvent<HTMLInputElement>
 const regularExpression  = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
@@ -16,6 +16,11 @@ const LoginRegister: FC = () => {
     const {status, error} = useSelector(
         (store: RootState) => store.auth
     )
+
+    const {dropDown} = useSelector(
+        (store: RootState) => store.utilitisesReducer
+    )
+
     const dispatch: AppDispatch = useDispatch()
 
     const [pageState, setPageState] = useState<"login" | "register">("login")
@@ -93,9 +98,14 @@ const LoginRegister: FC = () => {
             case "succeeded":
                 setStatusElement(<p>{pageState === "login" ? "Connection" : "Inscription"} réussie!</p>)
                 setTimeout(()=>{
-                    dispatch(displayLogRegAction())
                     if (pageState === "login") {
+                        if (dropDown === "logReg") {
+                            dispatch(displayDropDownAction(""))
+                        }
                         redirect('/chat', RedirectType.replace)
+                    }
+                    else {
+                        setPageState("login")
                     }
                 },1000)
                 break;
@@ -103,7 +113,7 @@ const LoginRegister: FC = () => {
                 setStatusElement(<p>{error}</p>)
                 break;
         }
-    },[dispatch, error, pageState, status])
+    },[dispatch, dropDown, error, pageState, status])
     
     useEffect(()=>{
         switch(pageState){
@@ -113,12 +123,13 @@ const LoginRegister: FC = () => {
                         <form onSubmit={handleSubmitLogin}>
                             <label htmlFor="name">Pseudo</label>
                             <input type="text" name="name" id="name"/>
-                            <label htmlFor="password">Mot de foutre</label>
+                            <label htmlFor="password">Mot de passe</label>
                             <input type="password" name="password" id="password" />
-                            <input type="submit" value="Se Connecter"/>
+                            <input className="main-action" type="submit" value="Se Connecter"/>
                             {statusElement}
                         </form>
-                        <button onClick={()=>setPageState("register")}>Register</button>
+                        <p>Pas encore de compte? <button className="login-button" onClick={()=>setPageState("register")}>{"S'incrire"}</button></p>
+                        
                     </>
                 )
                 break
@@ -139,16 +150,16 @@ const LoginRegister: FC = () => {
                                 <option value="femboy">Femboy</option>
                                 <option value="male">Male</option>
                             </select>
-                            <label htmlFor="password">Mot de foutre</label>
+                            <label htmlFor="password">Mot de passe</label>
                             <span>{initialPassword.length < 8 ? `${initialPassword.length}/8` : "Good"}</span>
                             <input type="password" name="password" onChange={handlePassword} required/>
-                            <label htmlFor="password-confirm">Confirmer le Mot de foutre</label>
+                            <label htmlFor="password-confirm">Confirmer le Mot de passe</label>
                             <input type="password" name="password-confirm" onChange={handleConfirmPassword} required/>
                             <p>{passwordFeedback}</p>
                             {statusElement}
-                            <input type="submit" value="S'Enregister" disabled={!isValid}/>
+                            <input className="main-action" type="submit" value="S'Enregister" disabled={!isValid}/>
                         </form>
-                        <button onClick={()=>setPageState("login")}>Login</button>
+                        <button className="login-button" onClick={()=>setPageState("login")}>Se Connecter</button>
                     </>
                 )
                 break
@@ -158,7 +169,7 @@ const LoginRegister: FC = () => {
     return (
         <>
             <div id="log-reg">
-                <button onClick={()=>dispatch(displayLogRegAction())}>X</button>
+                <button className="close-button" onClick={()=>dispatch(displayDropDownAction(""))}>X</button>
                 {pageElement}
             </div>
         </>

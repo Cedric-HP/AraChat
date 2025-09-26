@@ -1,10 +1,10 @@
 #base {
     display: flex;
     justify-content: center;
-    background-color: rgb(100, 100, 100);
     align-items: center;
     font-size: 50px;
     height: 100%;
+    background: radial-gradient(circle,rgba(100, 100, 100, 1) 50%, rgba(0, 0, 0, 1) 100%);
     min-height: calc(100vh - 75px);
     h1{
         font-family: "Coral Pixels", serif;
