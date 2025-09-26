@@ -27,6 +27,8 @@ export default function Chat() {
     currentChannelData,
     usersProfilList,
     channelList,
+    asToken,
+    status,
   } = useSelector((store: RootState) => store.auth);
 
   const dispatch: AppDispatch = useDispatch();
@@ -35,21 +37,24 @@ export default function Chat() {
   const [webs, setWebs] = useState<WebSocket | null>(null);
   // ----
 
-  // Redirection
+  // NEW: Correction du useEffect pour évité de déconnecter au reload de la page
 
-  useEffect(()=>{
-    if(!isAuthenticated) {
-      if(dropDown !== "logReg"){
-        dispatch(displayDropDownAction("logReg"))
-      }
-      redirect('/', RedirectType.replace)
+  useEffect(() => {
+    if (!isAuthenticated && user === null) {
+      dispatch(fetchProfileAction());
     }
-    else{
-      if (user === null) {
-        dispatch(fetchProfileAction())
-      }
+    if (!isAuthenticated && !asToken) {
+      console.log("Tentative de chargement de la session initiale...");
+      dispatch(fetchProfileAction());
     }
-  },[dispatch, dropDown, isAuthenticated, user])
+    if (status === "failed") {
+      console.log("Le chargement de la session a échoué.");
+      if (dropDown !== "logReg") {
+        dispatch(displayDropDownAction("logReg"));
+      }
+      redirect("/", RedirectType.replace);
+    }
+  }, [asToken, dispatch, dropDown, isAuthenticated, status, user]);
 
   const roomId = useSearchParams().get("roomId") || "";
   const [ownerElement, setOwnerElement] = useState<JSX.Element>(<></>);
@@ -98,18 +103,22 @@ export default function Chat() {
     }
   }, [currentChannelData, dispatch, isAuthenticated]);
 
-  const handleSendMessage = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData  = new FormData(event.currentTarget);
-    const message = String(formData.get("message"))
-    if (message.trim() && webs && webs.readyState === WebSocket.OPEN) {
-      webs.send(JSON.stringify({message:message}))
-      event.currentTarget.reset()
-    }
-    else{
-      console.error("Impossible d'envoyer le message: Websocket non connecté ou message vide. (bouffon va)")
-    }
-  }, [webs])
+  const handleSendMessage = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const message = String(formData.get("message"));
+      if (message.trim() && webs && webs.readyState === WebSocket.OPEN) {
+        webs.send(JSON.stringify({ message: message }));
+        event.currentTarget.reset();
+      } else {
+        console.error(
+          "Impossible d'envoyer le message: Websocket non connecté ou message vide. (bouffon va)"
+        );
+      }
+    },
+    [webs]
+  );
 
   const getSrc = (name: string) => {
     if (name.includes("deleted_User_")) {
@@ -203,8 +212,8 @@ export default function Chat() {
             height={35}
             width={35}
           />
-          <hr className="big-separator"/>
-          <h3  className="member-title">Membres</h3>
+          <hr className="big-separator" />
+          <h3 className="member-title">Membres</h3>
         </>
       );
     }
@@ -299,12 +308,16 @@ export default function Chat() {
     <section id="chat-section">
       <div id="channel-list">{channelElement}</div>
       <div id="chat">
-        <div id="message-list">
-          {messageElement}
-        </div>
+        <div id="message-list">{messageElement}</div>
         <div>
           <form onSubmit={handleSendMessage}>
-            <input type="text" name="message" id=""  required placeholder={`Envoyer un message dans ${currentChannelData.name}`}/>
+            <input
+              type="text"
+              name="message"
+              id=""
+              required
+              placeholder={`Envoyer un message dans ${currentChannelData.name}`}
+            />
             <button type="submit">Envoyer</button>
           </form>
         </div>

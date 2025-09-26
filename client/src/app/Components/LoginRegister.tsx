@@ -16,7 +16,7 @@ type InputData = React.ChangeEvent<HTMLInputElement>;
 const regularExpression = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/;
 
 const LoginRegister: FC = () => {
-  const { status, error, asToken, isAuthenticated } = useSelector(
+  const { status, error, isAuthenticated, user } = useSelector(
     (store: RootState) => store.auth
   );
 
@@ -113,10 +113,6 @@ const LoginRegister: FC = () => {
                 setStatusElement(<p>Chargement</p>)
                 break;
             case "succeeded":
-                if (asToken && !isAuthenticated) {
-                    dispatch(fetchProfileAction())
-                }
-                else {
                 setStatusElement(<p>{pageState === "login" ? "Connection" : "Inscription"} réussie!</p>)
                 setTimeout(()=>{
                     if (pageState === "login") {
@@ -129,13 +125,12 @@ const LoginRegister: FC = () => {
                         setPageState("login")
                     }
                 },1000)
-                }
                 break;
             case "failed":
                 setStatusElement(<p>{error}</p>)
                 break;
         }
-    },[asToken, dispatch, dropDown, error, isAuthenticated, pageState, status])
+    },[dispatch, dropDown, error, pageState, status])
     
     useEffect(()=>{
         switch(pageState){
