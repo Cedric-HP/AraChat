@@ -9,9 +9,10 @@ import UserHeader from "../Components/UserHeader";
 import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 import fetchProfileAction from "@/lib/action/fetchProfile";
 // import postMessageAction from "@/lib/action/postMessageAction";
-import { Message, ProfilPublic } from "@/lib/type/usersChatType";
+import { ChannelCreate, Message, ProfilPublic } from "@/lib/type/usersChatType";
 import fetchProfileByIdAction from "@/lib/action/fetchProfileById";
 import fetchChannelsDataAction from "@/lib/action/fetchChannelDataAction";
+import postCreateChannelAction from "@/lib/action/postCreateChannelAction";
 
 // NEW
 import { addLiveMessage } from "@/lib/slices/userSlice";
@@ -84,7 +85,7 @@ export default function Chat() {
       ws.onmessage = (event) => {
         try {
           const newMess: Message = JSON.parse(event.data);
-          newMess.channel_id = currentChannelData.id
+          // newMess.channel_id = currentChannelData.id
           console.log("Message received:", newMess);
           dispatch(addLiveMessage(newMess));
         } catch (err) {
@@ -294,11 +295,39 @@ export default function Chat() {
     );
   }, [currentChannelData.messagelogs, displayMessage, getUserProfilById]);
 
+
+  // Handle Create New Channel
+
+  const handleCreateNewChannel = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const newChannelData: ChannelCreate = {
+        name: String(formData.get("name")),
+        desc: String(formData.get("desc"))
+      }
+      dispatch(postCreateChannelAction(newChannelData))
+    },
+    [dispatch]
+  );
+
   // Return Displayed
 
   return (
     <section id="chat-section">
-      <div id="channel-list">{channelElement}</div>
+      <div id="channel-list">
+        <button>
+          <form onSubmit={handleCreateNewChannel}>
+            <h2>Créer un nouveaux Channel</h2>
+            <label htmlFor="name">Nom du Channel</label>
+            <input type="text" name="name" required/>
+            <label htmlFor="desc">Description</label>
+            <textarea name="desc" placeholder="Description"></textarea>
+            <input type="submit" />
+          </form>
+        </button>
+        {channelElement}
+      </div>
       <div id="chat">
         <div id="message-list">{messageElement}</div>
         <div>

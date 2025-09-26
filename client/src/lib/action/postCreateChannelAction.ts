@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { ChannelCreate, ChannelPublic } from "../type/usersChatType";
 import { authFetch } from "../api";
 
-const fetchCreateChannelAction = createAsyncThunk<ChannelPublic, ChannelCreate>(
+const postCreateChannelAction = createAsyncThunk<ChannelPublic, ChannelCreate>(
   "auth/postCreateChannels",
   async ({ name, desc }, { rejectWithValue }) => {
     try {
@@ -17,4 +17,4 @@ const fetchCreateChannelAction = createAsyncThunk<ChannelPublic, ChannelCreate>(
   }
 );
 
-export default fetchCreateChannelAction;
+export default postCreateChannelAction;

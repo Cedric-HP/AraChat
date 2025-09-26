@@ -12,7 +12,7 @@ import fetchProfile from "../action/fetchProfile";
 import fetchChannelsListAction from "../action/fetchChannelsList";
 import setStatusToIdleAction from "../action/setStatusToIdle";
 import fetchChannelsDataAction from "../action/fetchChannelDataAction";
-import fetchCreateChannelAction from "../action/postCreateChannelAction";
+import postCreateChannelAction from "../action/postCreateChannelAction";
 import postAddMemberToChannelAction from "../action/postAddMemberToChannelAction";
 import postMessageAction from "../action/postMessageAction";
 import fetchProfileByIdAction from "../action/fetchProfileById";
@@ -191,17 +191,17 @@ const authSlice = createSlice({
       })
 
       // Post Create Channel Case -------------------------------------------------
-      .addCase(fetchCreateChannelAction.pending, (state) => {
+      .addCase(postCreateChannelAction.pending, (state) => {
         state.status = "loading";
       })
       .addCase(
-        fetchCreateChannelAction.fulfilled,
+        postCreateChannelAction.fulfilled,
         (state, action: PayloadAction<ChannelPublic>) => {
           state.status = "succeeded";
           state.channelList.push(action.payload);
         }
       )
-      .addCase(fetchCreateChannelAction.rejected, (state, action) => {
+      .addCase(postCreateChannelAction.rejected, (state, action) => {
         state.status = "failed";
         state.error =
           action.error.message ||
