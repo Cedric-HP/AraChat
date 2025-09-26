@@ -1,8 +1,9 @@
 import os
-from datetime import datetime, timedelta, timezone # type: ignore
-from typing import Optional # type: ignore
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta, timezone  # type: ignore
+from typing import Optional, Annotated  # type: ignore
+from fastapi import Depends, HTTPException, status, Cookie
+
+# from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlmodel import Session, select
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGO = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10))
 
-oauth_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# oauth_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -37,13 +38,24 @@ def get_profil_by_name(session: Session, name):
 
 
 def get_current_profil(
-    token: str = Depends(oauth_scheme), session: Session = Depends(get_session)
+    access_token: Annotated[Optional[str], Cookie()] = None,
+    session: Session = Depends(get_session),
 ):
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Impossible de valider les identifiants",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if access_token is None:
+        raise credential_exception
+    
+    try:
+        token_type, token =access_token.split(" ")
+        if token_type.lower() != "bearer":
+            raise ValueError("Invalid token type")
+    except ValueError:
+        raise credential_exception
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGO])
         username: str = payload.get("sub")
@@ -51,7 +63,7 @@ def get_current_profil(
             raise credential_exception
     except JWTError:
         raise credential_exception
-    
+
     profil = get_profil_by_name(session, name=username)
     if profil is None:
         raise credential_exception

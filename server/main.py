@@ -6,7 +6,10 @@ from fastapi import (
     status,
     WebSocket,
     WebSocketDisconnect,
+    Response,
+    Cookie,
 )
+from typing import Annotated, Optional  # type: ignore
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
@@ -18,7 +21,6 @@ from connection_manager import manager
 from models import (
     ProfilCreate,
     ProfilPublic,
-    Token,
     Profil,
     ChannelCreate,
     ChannelPublic,
@@ -81,9 +83,10 @@ async def register_profil(
     return db_profil
 
 
-# TODO: Modifier le systeme d'auth pour y intégrer des cookie qui pourront être utiliser pour le websocket
-@app.post("/token", response_model=Token)
+# NEW: Grosse modification, le token est dans le cookie lol
+@app.post("/token")
 async def login_for_access_token(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
@@ -101,7 +104,14 @@ async def login_for_access_token(
     access_token = auth.create_access_token(
         data={"sub": profil.name}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        samesite="lax",
+        secure=False,  # A changer en true en prod
+    )
+    return {"message": "Le login est un succès (enculé)."}
 
 
 # Endpoint qui return les info d'un profil connecter
@@ -350,24 +360,35 @@ async def del_message_in_channel(
 # TODO: Faire en sorte qu'un utilisateur ne puisse voir que les channel dont il a accès (Possible nouvel endpoint channel list OU pas)
 
 
-# TODO: Mofifier websocket pour qu'il fonctionne via cookies et non token (les cookies c'est bon après tout :3)
+# NEW: J'ai mofifier websocket pour qu'il fonctionne en recupérant le token DANS le cookie (les cookies c'est bon après tout :3)
 # Ajout d'un nouvel endpoint pour le websocket ("L'url à notez sera ws:// et non http://")
 # /!\ Non testé, aucune idée de si cela fonctionne correctement. /!\
 # PS: Aucune idée de comment cela fonctionne coté front :3
-@app.websocket("/ws/{channel_id}/{token}")
+@app.websocket("/ws/{channel_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
     channel_id: int,
-    token: str,
     session: Session = Depends(get_session),
+    access_token: Annotated[Optional[str], Cookie()] = None,
 ):
-    # Première étape: Auth l'user via le token
+    # NEW: Récupération du token via cookie (parceque c'est bon les cookie)
+    if access_token is None:
+        await websocket.close(code=1008)
+        return
+
+    try:
+        token_type, token = access_token.split(" ")
+        if token_type.lower() != "bearer":
+            raise ValueError("Invalid token type")
+    except ValueError:
+        await websocket.close(code=1008)
+        return
     try:
         current_profil = auth.get_current_profil(token=token, session=session)
     except HTTPException:
-        # Token invalide > Ont refuse alors la connexion
         await websocket.close(code=1008)
         return
+    # -----------------------------------------------------------------------------
 
     # Deuxième étape: Ont vérifie que l'user à bien accès au channel
     db_channel = crud.get_channel_by_id(session=session, channel_id=channel_id)
@@ -412,4 +433,5 @@ async def websocket_endpoint(
         print(f"Erreur WebSocket: {e}")
         manager.disconnect(websocket, channel_id)
 
-# BUG: A reproduire, il semble que si un channel est supprimer, ses message subsiste, ce qui cause un problème 
+
+# BUG: A reproduire, il semble que si un channel est supprimer, ses message subsiste, ce qui cause un problème

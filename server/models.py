@@ -45,9 +45,9 @@ class ProfilPublic(ProfilBase):
 # --- Modèle Token ---
 
 
-class Token(SQLModel):
-    access_token: str
-    token_type: str
+# class Token(SQLModel):
+#     access_token: str
+#     token_type: str
 
 
 # --- Modèles Base Message

@@ -5,7 +5,7 @@ from typing import Dict, List # type: ignore
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: Dict[int, List[WebSocket]] = []
+        self.active_connections: Dict[int, List[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, channel_id: int):
         await websocket.accept()
