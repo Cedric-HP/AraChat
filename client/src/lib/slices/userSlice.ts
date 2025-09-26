@@ -21,6 +21,7 @@ interface AuthState {
   user: ProfilPublic | null;
   isAuthenticated: boolean;
   status: "idle" | "loading" | "succeeded" | "failed";
+  asToken: boolean;
   error: string | null;
   channelList: ChannelPublic[];
   currentChannelData: ChannelData;
@@ -31,6 +32,7 @@ const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   status: "idle",
+  asToken: false,
   error: null,
   channelList: [],
   currentChannelData: {
@@ -92,12 +94,14 @@ const authSlice = createSlice({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (state, _action: PayloadAction<boolean>) => {
           state.status = "succeeded";
+          state.asToken = true;
         }
       )
       .addCase(fetchUserDataAction.rejected, (state, action) => {
         state.status = "failed";
         state.user = null;
         state.isAuthenticated = false;
+        state.asToken = false;
         state.error = action.error.message || "Échec de la connexion";
       })
 
@@ -117,6 +121,7 @@ const authSlice = createSlice({
         state.status = "failed";
         state.user = null;
         state.isAuthenticated = false;
+        state.asToken = false;
         state.error =
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";
