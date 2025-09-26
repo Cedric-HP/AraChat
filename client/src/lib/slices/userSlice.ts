@@ -1,8 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ProfilPublic, ApiToken, ChannelPublic, ChannelPublicList, ChannelData, Message } from "../type/usersChatType";
+import {
+  ProfilPublic,
+  ChannelPublic,
+  ChannelPublicList,
+  ChannelData,
+  Message,
+} from "../type/usersChatType";
 import postRegisterAction from "../action/postRegister";
 import fetchUserDataAction from "../action/fetchUserData";
-import fetchProfile from '../action/fetchProfile';
+import fetchProfile from "../action/fetchProfile";
 import fetchChannelsListAction from "../action/fetchChannelsList";
 import setStatusToIdleAction from "../action/setStatusToIdle";
 import fetchChannelsDataAction from "../action/fetchChannelDataAction";
@@ -13,7 +19,7 @@ import fetchProfileByIdAction from "../action/fetchProfileById";
 
 interface AuthState {
   user: ProfilPublic | null;
-  token: string | null;
+  isAuthenticated: boolean;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   channelList: ChannelPublic[];
@@ -23,8 +29,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: 
-    typeof window !== "undefined" ? localStorage.getItem("authToken") : null, // On récup le token au démarrage ;)
+  isAuthenticated: false,
   status: "idle",
   error: null,
   channelList: [],
@@ -36,7 +41,7 @@ const initialState: AuthState = {
     members: [],
     messagelogs: [],
   },
-  usersProfilList: []
+  usersProfilList: [],
 };
 
 const authSlice = createSlice({
@@ -44,10 +49,14 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
+    addLiveMessage: (state, action: PayloadAction<Message>) => {
+      if (state.currentChannelData && state.currentChannelData.id === action.payload.channel_id) {
+        state.currentChannelData.messagelogs.push(action.payload)
+      }
+    },
     logout: (state) => {
       state.user = null;
-      state.token = null;
-      localStorage.removeItem("authToken");
+      state.isAuthenticated = false;
       state.status = "idle";
     },
   },
@@ -55,8 +64,8 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Set Status to idle -------------------------------------------------
-      .addCase(setStatusToIdleAction, (state)=>{
-        state.status = "idle"
+      .addCase(setStatusToIdleAction, (state) => {
+        state.status = "idle";
       })
 
       // Register Case -------------------------------------------------
@@ -80,15 +89,15 @@ const authSlice = createSlice({
       })
       .addCase(
         fetchUserDataAction.fulfilled,
-        (state, action: PayloadAction<ApiToken>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (state, _action: PayloadAction<boolean>) => {
           state.status = "succeeded";
-          state.token = action.payload.access_token;
         }
       )
       .addCase(fetchUserDataAction.rejected, (state, action) => {
         state.status = "failed";
-        state.token = null;
         state.user = null;
+        state.isAuthenticated = false;
         state.error = action.error.message || "Échec de la connexion";
       })
 
@@ -101,13 +110,13 @@ const authSlice = createSlice({
         (state, action: PayloadAction<ProfilPublic>) => {
           state.status = "succeeded";
           state.user = action.payload;
+          state.isAuthenticated = true;
         }
       )
       .addCase(fetchProfile.rejected, (state, action) => {
         state.status = "failed";
         state.user = null;
-        state.token = null;
-        localStorage.removeItem("authToken");
+        state.isAuthenticated = false;
         state.error =
           action.error.message ||
           "Impossible de charger le profile de l'utilisateur.";
@@ -121,14 +130,16 @@ const authSlice = createSlice({
         fetchProfileByIdAction.fulfilled,
         (state, action: PayloadAction<ProfilPublic>) => {
           state.status = "succeeded";
-          const find = state.usersProfilList.find((item)=>item.id === action.payload.id)
-          if (find === undefined)
-            state.usersProfilList.push(action.payload)
+          const find = state.usersProfilList.find(
+            (item) => item.id === action.payload.id
+          );
+          if (find === undefined) state.usersProfilList.push(action.payload);
           else {
-            const newArray = [...state.usersProfilList]
-            let find = newArray.find((item)=>item.id === action.payload.id)
-            find = action.payload
-            state.usersProfilList = newArray
+            const newArray = [...state.usersProfilList];
+            let find = newArray.find((item) => item.id === action.payload.id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            find = action.payload;
+            state.usersProfilList = newArray;
           }
         }
       )
@@ -153,8 +164,7 @@ const authSlice = createSlice({
       .addCase(fetchChannelsListAction.rejected, (state, action) => {
         state.status = "failed";
         state.error =
-          action.error.message ||
-          "Impossible de charger les channels";
+          action.error.message || "Impossible de charger les channels";
       })
 
       // Get Channel Data By Id Case -------------------------------------------------
@@ -231,5 +241,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, addLiveMessage } = authSlice.actions;
 export default authSlice.reducer;

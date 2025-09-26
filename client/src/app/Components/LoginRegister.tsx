@@ -1,73 +1,90 @@
-"use client"
+"use client";
 import { JSX, useCallback, useEffect, useState, type FC } from "react";
-import "../styles/loginregister.scss"
+import "../styles/loginregister.scss";
 import type { AppDispatch, RootState } from "../../lib/store";
 import fetchUserDataAction from "@/lib/action/fetchUserData";
 import { useDispatch, useSelector } from "react-redux";
-import { redirect, RedirectType } from 'next/navigation'
+import { redirect, RedirectType } from "next/navigation";
 import postRegisterAction from "@/lib/action/postRegister";
 import displayDropDownAction from "@/lib/action/UtilitisesActions/displayDropDownAction";
 
-type InputData = React.ChangeEvent<HTMLInputElement>
-const regularExpression  = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
+// NEW
+import fetchProfileAction from "@/lib/action/fetchProfile";
+// -----
+
+type InputData = React.ChangeEvent<HTMLInputElement>;
+const regularExpression = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/;
 
 const LoginRegister: FC = () => {
+  const { status, error, isAuthenticated, user } = useSelector(
+    (store: RootState) => store.auth
+  );
 
-    const {status, error} = useSelector(
-        (store: RootState) => store.auth
-    )
+  const { dropDown } = useSelector(
+    (store: RootState) => store.utilitisesReducer
+  );
 
-    const {dropDown} = useSelector(
-        (store: RootState) => store.utilitisesReducer
-    )
+  const dispatch: AppDispatch = useDispatch();
 
-    const dispatch: AppDispatch = useDispatch()
+  const [pageState, setPageState] = useState<"login" | "register">("login");
+  const [pageElement, setPageElement] = useState<JSX.Element>(<p></p>);
+  const [initialPassword, setInitialPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [isValid, setIsValid] = useState<boolean>(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<string>("");
+  const [statusElement, setStatusElement] = useState<JSX.Element>(<p></p>);
 
-    const [pageState, setPageState] = useState<"login" | "register">("login")
-    const [pageElement, setPageElement] = useState<JSX.Element>(<p></p>)
-    const [initialPassword, setInitialPassword] = useState<string>("")
-    const [confirmPassword, setConfirmPassword] = useState<string>("")
-    const [isValid, setIsValid] = useState<boolean>(false)
-    const [passwordFeedback, setPasswordFeedback] = useState<string>("")
-    const [statusElement, setStatusElement] = useState<JSX.Element>(<p></p>)
+  const handleLogin = useCallback(
+    async (formdata: FormData) => {
+      dispatch(
+        fetchUserDataAction({
+          name: String(formdata.get("name")),
+          password: String(formdata.get("password")),
+        })
+      );
+    },
+    [dispatch]
+  );
 
-    const handleLogin =  useCallback(async (formdata: FormData) => {
-        dispatch(fetchUserDataAction({
-            name: String(formdata.get("name")),
-            password: String(formdata.get("password"))
-        }))
-    },[dispatch])
+  const handleRegister = useCallback(
+    async (formdata: FormData) => {
+      dispatch(
+        postRegisterAction({
+          name: String(formdata.get("name")),
+          birthdate: String(formdata.get("birthdate")),
+          sexe: String(formdata.get("sexe")),
+          password: String(formdata.get("password")),
+        })
+      );
+    },
+    [dispatch]
+  );
 
-    const handleRegister =  useCallback(async (formdata: FormData) => {
+  const handlePassword = useCallback((inputData: InputData) => {
+    setInitialPassword(String(inputData.target.value));
+  }, []);
 
-         dispatch(postRegisterAction({
-            name: String(formdata.get("name")),
-            birthdate: String(formdata.get("birthdate")),
-            sexe: String(formdata.get("sexe")),
-            password: String(formdata.get("password")),
-        }))
-    },[dispatch])
+  const handleConfirmPassword = useCallback((inputData: InputData) => {
+    setConfirmPassword(String(inputData.target.value));
+  }, []);
 
-    const handlePassword = useCallback((inputData: InputData) =>{
-        setInitialPassword(String(inputData.target.value))
+  const handleSubmitLogin = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      handleLogin(formData);
+    },
+    [handleLogin]
+  );
 
-    },[])
-
-    const handleConfirmPassword = useCallback((inputData: InputData) =>{
-        setConfirmPassword(String(inputData.target.value))
-    },[])
-
-    const handleSubmitLogin = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        const formData = new FormData(event.currentTarget)
-        handleLogin(formData)
-    }, [handleLogin])
-
-    const handleSubmitRegister = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        const formData = new FormData(event.currentTarget)
-        handleRegister(formData)
-    }, [handleRegister])
+  const handleSubmitRegister = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      handleRegister(formData);
+    },
+    [handleRegister]
+  );
 
     useEffect(()=> {
         if(initialPassword === confirmPassword  && regularExpression.test(initialPassword) ) {
@@ -166,14 +183,19 @@ const LoginRegister: FC = () => {
         }
     },[handleConfirmPassword, handleLogin, handlePassword, handleRegister, handleSubmitLogin, handleSubmitRegister, initialPassword.length, isValid, pageState, passwordFeedback, statusElement])
 
-    return (
-        <>
-            <div id="log-reg">
-                <button className="close-button" onClick={()=>dispatch(displayDropDownAction(""))}>X</button>
-                {pageElement}
-            </div>
-        </>
-    )
-}
+  return (
+    <>
+      <div id="log-reg">
+        <button
+          className="close-button"
+          onClick={() => dispatch(displayDropDownAction(""))}
+        >
+          X
+        </button>
+        {pageElement}
+      </div>
+    </>
+  );
+};
 
-export default LoginRegister
+export default LoginRegister;
